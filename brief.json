@@ -1,0 +1,44 @@
+{
+  "project": "",
+  "campaign_name": "Oxygen Forest - Forest Estates, Kamareddy",
+  "product_name": "Oxygen Forest (Pranavayu Vanam) forest estates",
+  "facts_source": "https://oxygenforest.io (read 2026-10-23). Use ONLY these facts; never invent numbers.",
+  "facts": {
+    "location": "Kamareddy, Telangana",
+    "community": "160 acres, gated, one gate",
+    "estates": "132 forest estates, never more; 40 remain",
+    "sizes": "2,057 sq yd and 3,630 sq yd estates (3,630 has reserve-forest views on the boundary)",
+    "price": "Starting from ₹70 lakhs (indicative; full price sheet on WhatsApp)",
+    "forest": "25,000 acres of protected forest around the community",
+    "plantation": "450+ fruit and timber trees per estate, permaculture master plan",
+    "managed_farming": "A resident farm team plants, waters, prunes and harvests all seven days, whether you visit every Saturday or twice a year",
+    "water": "Natural streams, harvesting pit and swales on every estate",
+    "farmhouse": "Space for a farmhouse within the plan",
+    "air": "The city averages PM2.5 near 50; the forest does not",
+    "distance": "About 2 hours / 130 km from Hyderabad; 92 km from Medchal; 56 km from Nizamabad; railway station 7 km",
+    "legal": "Registered forest estate with clear title; documents shared before you commit, verify with your own advocate",
+    "resale": "Registered land with clear title resells like any land",
+    "owner_revenue": "Owner revenue-stream plans are revealed only to the 132 owners after the community closes (tease only, no details)",
+    "on_site": "Real places to show: the dirt track, farm mornings, the pottery shed, seed to table, swales at work, the pond, estate farmhouses",
+    "visits": "Hosted site visits Saturday and Sunday only, pre-booked, complimentary for serious buyers, no pressure; video walkthrough on WhatsApp for NRIs",
+    "urgency": "Bookings close in the next 30 days",
+    "contact": "Phone / WhatsApp +91 81217 77770"
+  },
+  "taglines_from_site": ["Breathe.", "Own the forest.", "132 estates. Never more.", "Come see it. Decide nothing.", "Managed.", "Far enough to be a forest."],
+  "target_audience": "Hyderabad professionals, families and NRIs who want a weekend forest home, a managed farm and a land asset with clear title.",
+  "target_duration_seconds": 20.0,
+  "hook_angle": "Escape city air: own a planted, managed forest estate with 25,000 protected acres on your boundary.",
+  "key_value_propositions": [
+    "25,000 acres of protected forest around a 160-acre gated community",
+    "450+ fruit and timber trees per estate, cared for by a resident farm team",
+    "Registered estates with clear title, from ₹70 lakhs",
+    "Only 132 estates, 40 remain"
+  ],
+  "call_to_action": "Book a hosted weekend visit or get the price sheet on WhatsApp.",
+  "tone": "Calm, premium, confident, grounded. No hype, no pressure, no financial guarantees (the brand's own voice: 'Come see it. Decide nothing.').",
+  "pacing_guidelines": {
+    "max_scene_duration_seconds": 3.5,
+    "min_scene_duration_seconds": 1.5,
+    "visual_hook_window_seconds": 2.5
+  }
+}

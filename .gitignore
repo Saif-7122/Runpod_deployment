@@ -1,3 +1,10 @@
 __pycache__/
 *.pyc
 .env
+token.json
+client_secret*.json
+service_account*.json
+workspace/
+data/
+*.mp4
+*.wav

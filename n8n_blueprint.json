@@ -1,439 +1,127 @@
 {
-  "name": "RunPod Video Factory",
+  "name": "Content Engine v1.2",
   "nodes": [
     {
       "parameters": {},
-      "id": "node-1-manual-trigger",
-      "name": "1. Manual Start Signal",
+      "id": "a1",
+      "name": "Start",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        240,
+        200,
         300
       ]
     },
     {
       "parameters": {
-        "operation": "list",
-        "useQueryString": true,
-        "queryString": "'12sr-Z52Cc50QifU3-3qfDQpXAt4DevNi' in parents and trashed = false",
-        "options": {}
-      },
-      "id": "node-2-scan-drive",
-      "name": "2. Scan Oxygen Drive Folder",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 2,
-      "position": [
-        460,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const items = $input.all();\nconst raw_files = items.map(item => ({\n  id: item.json.id,\n  name: item.json.name,\n  mimeType: item.json.mimeType\n}));\n\nconst inventory_list = raw_files\n  .map(f => `- ${f.name} (id: ${f.id})`)\n  .join('\\n');\n\nreturn [{\n  json: {\n    raw_files,\n    inventory_list,\n    total_files: raw_files.length\n  }\n}];"
-      },
-      "id": "node-3-build-catalog",
-      "name": "3. Build Drive File Catalog",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        680,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.anthropic.com/v1/messages",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "x-api-key",
-              "value": "={{$env.ANTHROPIC_API_KEY || 'YOUR_ANTHROPIC_KEY'}}"
-            },
-            {
-              "name": "anthropic-version",
-              "value": "2023-06-01"
-            },
-            {
-              "name": "content-type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"claude-3-5-sonnet-20240620\",\n  \"max_tokens\": 4096,\n  \"system\": \"You are a world-class performance marketing director creating high-converting short-form video ads. You must output ONLY a valid, pure JSON object with no markdown fences, no backticks, and no conversational preamble. Schema required:\\n{\\n  \\\"video_title\\\": \\\"string\\\",\\n  \\\"total_duration_seconds\\\": 20.0,\\n  \\\"voiceover_script\\\": \\\"string\\\",\\n  \\\"timeline\\\": [\\n    {\\n      \\\"scene\\\": 1,\\n      \\\"start_time\\\": 0.0,\\n      \\\"end_time\\\": 2.5,\\n      \\\"b_roll\\\": \\\"exact_filename_from_catalog.mp4\\\",\\n      \\\"text_overlay\\\": \\\"HOOK TEXT\\\"\\n    }\\n  ]\\n}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Build a high-converting short-form ad script and timeline from our B-roll catalog.\\n\\nCRITICAL RULES:\\n1. b_roll MUST be the exact filename string from the catalog below. Do NOT use b_roll_name or b_roll_id.\\n2. Keep each scene cut duration under 3.5 seconds for rapid pacing.\\n3. text_overlay must be short, punchy marketing hooks.\\n\\nCatalog of Available B-Roll:\\n\" + $json.inventory_list\n    }\n  ]\n}"
-      },
-      "id": "node-4-claude-director",
-      "name": "4. Claude 3.5 (Director)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        900,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const fs = require('fs');\n\nconst first = $input.first().json;\nlet rawText = '';\n\nif (first.content && Array.isArray(first.content) && first.content[0]?.text) {\n  rawText = first.content[0].text;\n} else if (typeof first === 'string') {\n  rawText = first;\n} else if (first.text) {\n  rawText = first.text;\n} else {\n  rawText = JSON.stringify(first);\n}\n\n// Strip markdown code fences (```json ... ```)\nconst cleaned = rawText.replace(/```json\\s*/gi, '').replace(/```\\s*/g, '').trim();\nconst parsed = JSON.parse(cleaned);\n\n// Standardize timeline keys strictly to b_roll\nconst standardizedTimeline = (parsed.timeline || []).map((item, idx) => ({\n  scene: typeof item.scene === 'number' ? item.scene : (idx + 1),\n  start_time: parseFloat(item.start_time),\n  end_time: parseFloat(item.end_time),\n  b_roll: item.b_roll || item.b_roll_name || item.b_roll_id,\n  text_overlay: item.text_overlay || ''\n}));\n\nconst timelineData = {\n  video_title: parsed.video_title || 'Untitled Ad',\n  total_duration_seconds: parseFloat(parsed.total_duration_seconds || 0),\n  voiceover_script: parsed.voiceover_script || '',\n  timeline: standardizedTimeline\n};\n\n// Ensure workspace directories exist\nfs.mkdirSync('/workspace/inputs', { recursive: true });\nfs.mkdirSync('/workspace/outputs', { recursive: true });\nfs.mkdirSync('/workspace/assets', { recursive: true });\n\n// Save timeline JSON\nfs.writeFileSync('/workspace/inputs/current_timeline.json', JSON.stringify(timelineData, null, 2), 'utf-8');\n\nreturn [{ json: timelineData }];"
-      },
-      "id": "node-4b-save-timeline",
-      "name": "4b. Save to current_timeline.json",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1120,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "command": "python3 /workspace/judge.py"
-      },
-      "id": "node-5-judge",
-      "name": "5. AI Judge (TRIBE v2)",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [
-        1340,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const stdout = $input.first().json.stdout || '';\nconst lines = stdout.trim().split('\\n');\nconst lastLine = lines[lines.length - 1].trim();\n\nlet judgeResult = { score: 0, feedback: 'Unable to parse judge output' };\ntry {\n  judgeResult = JSON.parse(lastLine);\n} catch (e) {\n  const match = stdout.match(/\\{[\\s\\S]*\"score\"[\\s\\S]*\\}/);\n  if (match) {\n    try {\n      judgeResult = JSON.parse(match[0]);\n    } catch (err) {}\n  }\n}\n\n// Retrieve timeline from Node 4b\nconst timelineData = $('4b. Save to current_timeline.json').first().json;\n\nreturn [{\n  json: {\n    ...timelineData,\n    score: typeof judgeResult.score === 'number' ? judgeResult.score : 0,\n    feedback: judgeResult.feedback || '',\n    judge_stdout: stdout\n  }\n}];"
-      },
-      "id": "node-5b-merge-score",
-      "name": "5b. Merge Score",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1560,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
+        "values": {
           "number": [
             {
-              "value1": "={{ $json.score }}",
-              "operation": "largerEqual",
-              "value2": 85
+              "name": "variants",
+              "value": 10
+            },
+            {
+              "name": "parallel",
+              "value": 8
+            }
+          ],
+          "string": [
+            {
+              "name": "brief",
+              "value": "brief.json"
             }
           ]
-        }
+        },
+        "options": {}
       },
-      "id": "node-6-quality-filter",
-      "name": "6. Quality Filter",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
+      "id": "a2",
+      "name": "Batch settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
       "position": [
-        1780,
+        420,
         300
       ]
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://api.sarvam.ai/text-to-speech",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "api-subscription-key",
-              "value": "={{$env.SARVAM_API_KEY || 'YOUR_SARVAM_KEY'}}"
-            },
-            {
-              "name": "content-type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"inputs\": [ $json.voiceover_script ],\n  \"target_language_code\": \"en-IN\",\n  \"speaker\": \"meera\",\n  \"pace\": 1.05,\n  \"model\": \"bulbul:v1\"\n}"
+        "command": "bash -lc 'source /workspace/ce_env.sh && cd /workspace && python3 analyze.py --drive 2>&1 | tail -5'"
       },
-      "id": "node-7-sarvam-tts",
-      "name": "7. Sarvam AI (TTS)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        2000,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const fs = require('fs');\n\n// 1. Decode Sarvam TTS base64 audio and save to /workspace/inputs/raw_tts.wav\nconst ttsJson = $input.first().json;\nif (ttsJson.audios && Array.isArray(ttsJson.audios) && ttsJson.audios.length > 0) {\n  const audioBase64 = ttsJson.audios[0];\n  const audioBuffer = Buffer.from(audioBase64, 'base64');\n  fs.mkdirSync('/workspace/inputs', { recursive: true });\n  fs.writeFileSync('/workspace/inputs/raw_tts.wav', audioBuffer);\n}\n\n// 2. Load timeline from Node 4b and catalog from Node 3\nconst timelineData = $('4b. Save to current_timeline.json').first().json;\nconst catalogData = $('3. Build Drive File Catalog').first().json;\nconst rawFiles = catalogData.raw_files || [];\n\n// Sequential serial naming: 01_filename.mp4, 02_filename.mp4, etc.\nconst serialMap = new Map();\nlet counter = 1;\n\ntimelineData.timeline = (timelineData.timeline || []).map(cut => {\n  const originalName = cut.b_roll;\n  if (!serialMap.has(originalName)) {\n    const prefix = String(counter).padStart(2, '0');\n    const serialName = `${prefix}_${originalName}`;\n\n    // Find Drive file ID from catalog\n    const matchedFile = rawFiles.find(f => \n      f.name === originalName || \n      f.name.toLowerCase() === (originalName || '').toLowerCase()\n    );\n    const fileId = matchedFile ? matchedFile.id : null;\n\n    serialMap.set(originalName, {\n      file_id: fileId,\n      file_name: serialName,\n      original_name: originalName\n    });\n    counter++;\n  }\n\n  const assigned = serialMap.get(originalName);\n  return {\n    ...cut,\n    b_roll: assigned.file_name\n  };\n});\n\n// Overwrite /workspace/inputs/current_timeline.json on disk with serial-numbered filenames\nfs.writeFileSync(\n  '/workspace/inputs/current_timeline.json',\n  JSON.stringify(timelineData, null, 2),\n  'utf-8'\n);\n\n// 3. Return one item per unique file to download\nconst downloadQueue = Array.from(serialMap.values()).map(item => ({\n  json: {\n    file_id: item.file_id,\n    file_name: item.file_name,\n    original_name: item.original_name\n  }\n}));\n\nreturn downloadQueue;"
-      },
-      "id": "node-8-save-audio-queue-clips",
-      "name": "8. Save Audio & Queue Serial Clips",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2220,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "download",
-        "fileId": "={{$json[\"file_id\"]}}",
-        "options": {}
-      },
-      "id": "node-9-download-clips",
-      "name": "9. Download Selected Clips from Drive",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 2,
-      "position": [
-        2440,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "write",
-        "fileName": "=/workspace/assets/{{$json[\"file_name\"]}}",
-        "dataPropertyName": "data",
-        "options": {}
-      },
-      "id": "node-10-save-clips",
-      "name": "10. Save Clips to /workspace/assets",
-      "type": "n8n-nodes-base.readWriteFile",
-      "typeVersion": 1,
-      "position": [
-        2660,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "// Wait for all downloads from Node 10 to complete before running MoviePy once\nconst items = $input.all();\nreturn [{\n  json: {\n    ready: true,\n    total_clips_downloaded: items.length\n  }\n}];"
-      },
-      "id": "node-10b-wait-downloads",
-      "name": "10b. Wait for All Downloads",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2880,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "command": "python3 /workspace/editor.py"
-      },
-      "id": "node-11-gpu-render",
-      "name": "11. GPU Render (MoviePy)",
+      "id": "a3",
+      "name": "Analyze new clips",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        3100,
-        200
+        640,
+        300
       ]
     },
     {
       "parameters": {
-        "jsCode": "const fs = require('fs');\n\nconst videoPath = '/workspace/outputs/finished_ad.mp4';\nconst projectPath = '/workspace/outputs/edit_project_source.json';\n\nconst videoBuffer = fs.readFileSync(videoPath);\nconst projectBuffer = fs.readFileSync(projectPath);\n\nreturn [\n  {\n    json: {\n      fileName: 'finished_ad.mp4',\n      folderId: 'PASTE_YOUR_OUTPUT_ID_HERE'\n    },\n    binary: {\n      data: {\n        data: videoBuffer.toString('base64'),\n        mimeType: 'video/mp4',\n        fileName: 'finished_ad.mp4'\n      }\n    }\n  },\n  {\n    json: {\n      fileName: 'edit_project_source.json',\n      folderId: 'PASTE_YOUR_OUTPUT_ID_HERE'\n    },\n    binary: {\n      data: {\n        data: projectBuffer.toString('base64'),\n        mimeType: 'application/json',\n        fileName: 'edit_project_source.json'\n      }\n    }\n  }\n];"
+        "command": "=bash -lc 'source /workspace/ce_env.sh && cd /workspace && python3 run.py --brief {{$node[\"Batch settings\"].json[\"brief\"]}} --variants {{$node[\"Batch settings\"].json[\"variants\"]}} --parallel {{$node[\"Batch settings\"].json[\"parallel\"]}} --upload --cleanup 2>/workspace/data/last_run.log | tail -1'"
       },
-      "id": "node-11b-read-outputs",
-      "name": "11b. Read Output Files",
+      "id": "a4",
+      "name": "Make videos",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        860,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const lines = $input.first().json.stdout.trim().split(/\\r?\\n/);\nreturn [{ json: JSON.parse(lines[lines.length - 1]) }];"
+      },
+      "id": "a5",
+      "name": "Batch result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3320,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "upload",
-        "fileId": "PASTE_YOUR_OUTPUT_ID_HERE",
-        "name": "={{$json[\"fileName\"]}}",
-        "binaryPropertyName": "data",
-        "options": {}
-      },
-      "id": "node-12-upload-drive",
-      "name": "12. Upload to Google Drive Output Folder",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 2,
-      "position": [
-        3540,
-        200
+        1080,
+        300
       ]
     }
   ],
   "connections": {
-    "1. Manual Start Signal": {
+    "Start": {
       "main": [
         [
           {
-            "node": "2. Scan Oxygen Drive Folder",
+            "node": "Batch settings",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "2. Scan Oxygen Drive Folder": {
+    "Batch settings": {
       "main": [
         [
           {
-            "node": "3. Build Drive File Catalog",
+            "node": "Analyze new clips",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "3. Build Drive File Catalog": {
+    "Analyze new clips": {
       "main": [
         [
           {
-            "node": "4. Claude 3.5 (Director)",
+            "node": "Make videos",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "4. Claude 3.5 (Director)": {
+    "Make videos": {
       "main": [
         [
           {
-            "node": "4b. Save to current_timeline.json",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "4b. Save to current_timeline.json": {
-      "main": [
-        [
-          {
-            "node": "5. AI Judge (TRIBE v2)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "5. AI Judge (TRIBE v2)": {
-      "main": [
-        [
-          {
-            "node": "5b. Merge Score",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "5b. Merge Score": {
-      "main": [
-        [
-          {
-            "node": "6. Quality Filter",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "6. Quality Filter": {
-      "main": [
-        [
-          {
-            "node": "7. Sarvam AI (TTS)",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "3. Build Drive File Catalog",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "7. Sarvam AI (TTS)": {
-      "main": [
-        [
-          {
-            "node": "8. Save Audio & Queue Serial Clips",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "8. Save Audio & Queue Serial Clips": {
-      "main": [
-        [
-          {
-            "node": "9. Download Selected Clips from Drive",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "9. Download Selected Clips from Drive": {
-      "main": [
-        [
-          {
-            "node": "10. Save Clips to /workspace/assets",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "10. Save Clips to /workspace/assets": {
-      "main": [
-        [
-          {
-            "node": "10b. Wait for All Downloads",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "10b. Wait for All Downloads": {
-      "main": [
-        [
-          {
-            "node": "11. GPU Render (MoviePy)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "11. GPU Render (MoviePy)": {
-      "main": [
-        [
-          {
-            "node": "11b. Read Output Files",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "11b. Read Output Files": {
-      "main": [
-        [
-          {
-            "node": "12. Upload to Google Drive Output Folder",
+            "node": "Batch result",
             "type": "main",
             "index": 0
           }
@@ -441,9 +129,5 @@
       ]
     }
   },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "tags": []
+  "settings": {}
 }

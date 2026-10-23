@@ -1,0 +1,121 @@
+# Content Engine v1.2 configuration.  NO API KEYS HERE -> they live in .env (see .env.example).
+
+# Root for catalog/, cache/, runs/.  Relative = inside the repo. On RunPod set CE_WORKSPACE=/workspace/data
+workspace: "./workspace"
+
+drive:
+  raw_folder_id: "12sr-Z52Cc50QifU3-3qfDQpXAt4DevNi"   # raw clips; first-level subfolders = projects
+  output_folder_id: "1aLI-xTyuZqMG1uDX51Axkhhjz0oVZiFj"         # finished videos land in a dated subfolder here
+  upload_by_default: false
+
+models:
+  vision_model: "claude-sonnet-5-5"     # watches clip frames
+  director_model: "claude-sonnet-5-5"   # writes scripts and picks footage
+  judge_model: "claude-sonnet-5-5"      # scores scripts against brand_voice_rubric.md
+
+analysis:
+  workers: 3                    # clips analysed in parallel
+  vision_frame_width: 768       # px width of frames shown to Claude
+  max_vision_frames: 40         # long clips are sampled evenly down to this
+  min_ad_score: 6               # Claude score (0-10) needed to approve a segment
+  min_short_side_px: 1080       # below this the clip is flagged low_resolution
+  make_proxies: true            # 1080-wide proxy per clip -> much faster renders
+  keep_frames: false            # true = keep extracted frames for review (uses disk)
+  keep_originals: false         # false = delete the Drive original once its proxy (picture + audio) exists
+  blocking_problems:            # Claude problems that reject a segment
+    - competitor_branding
+    - construction_mess
+    - watermark
+    - text_on_screen          # burned-in captions / titles from an earlier edit
+    - letterboxed_or_framed   # black bars, rounded frames, picture-in-picture
+
+audio:                          # clips that already carry meaningful speech (edited videos, testimonials)
+  enabled: true
+  stt_url: "https://api.sarvam.ai/speech-to-text"
+  stt_model: "saaras:v3"        # verified 2026-10-23
+  silence_db: -40               # below = silence when splitting speech into phrases
+  min_gap_s: 0.3
+  max_stt_chunk_s: 25           # Sarvam REST accepts < 30 s per request
+  max_stt_requests_per_clip: 12
+  min_words: 6                  # fewer words = treat as music / ambient (audio ignored)
+  min_native_s: 2.0
+  max_native_s: 15.0
+
+thresholds_clip:                # stage B technical checks; tune on 20-30 of your clips
+  sharp_rel: 0.45               # blurry if sharpness < 45% of the clip's median ...
+  sharp_abs: 15                 # ... or below this absolute floor
+  dark_mean: 35                 # mean luma below this = too dark
+  clipped_frac: 0.08            # >8% pixels at 250+ = blown out
+  whip_speed: 0.12              # frame-widths moved per 0.25 s = whip-pan
+  shake_jerk: 0.012             # 1 s mean change in motion = shaky
+  cut_hist_correl: 0.55         # colour-histogram correlation below this = new shot ...
+  cut_track_response: 0.08      # ... or motion tracking lost (low confidence)
+  cut_frame_diff: 25            #     while the whole frame changed (mean abs diff, 0-255)
+  edge_trim_s: 0.5              # drop first/last 0.5 s of every recording
+  min_segment_s: 1.5
+  max_segment_s: 10
+
+director:
+  default_target_seconds: 20
+  words_per_second: 2.5         # Indian English voiceover pace
+  max_scene_seconds: 3.5        # longest single cut
+  max_segments_in_prompt: 120
+  max_native_per_video: 1       # clips played with their own audio (testimonial / presenter)
+
+judge:
+  min_score: 80
+  max_attempts: 3
+  length_tolerance: 0.15
+  skip_rubric_on_rule_fail: true   # rewrite before paying for the rubric call
+
+tts:
+  url: "https://api.sarvam.ai/text-to-speech"
+  model: "bulbul:v3"            # verified 2026-10-23 (v1, v2 retired)
+  speaker: "priya"              # bulbul:v3 voices: priya, kavya, ritu, shubh, advait, ... (samples in workspace/voice_samples)
+  request_style: "text"         # "inputs" for the old bulbul:v1 API shape
+  language_code: "en-IN"
+  pace: 1.05
+  sample_rate: 22050
+  parallel_requests: 4
+  gap_seconds: 0.15
+  silence_db: -45
+
+captions:
+  font: "Liberation Sans"
+  fonts_dir: ""                 # pod: /usr/share/fonts/truetype/liberation ; empty = system fonts
+  size: 74
+  overlay_size: 64
+  words_per_caption: 3
+  uppercase: true
+  caption_margin_v: 520         # px from bottom
+  overlay_margin_v: 260         # px from top
+
+rendering:
+  video_codec: "libx264"        # "h264_nvenc" on the RunPod 4090 (setup.sh sets this via CE_CODEC)
+  nvenc_preset: "p5"
+  cq: 21                        # NVENC quality (lower = better)
+  crf: 20                       # x264 quality
+  fps: 30
+  hw_decode: false              # true on the pod if originals (not proxies) are rendered
+  parallel_renders: 4           # simultaneous ffmpeg encodes (4090 NVENC handles 4-8)
+  threads: 4                    # CPU threads per render
+  tail_seconds: 0.5             # picture held after the last word
+  music_path: ""                # optional background track (ducked under the voice)
+  music_volume: 0.15
+
+batch:
+  parallel_videos: 8            # videos in flight (API + render)
+
+banned_claims:
+  - "100% guaranteed"
+  - "guaranteed returns"
+  - "risk-free"
+  - "instant riches"
+  - "get rich quick"
+  - "zero risk"
+  - "guaranteed profit"
+  - "government approved returns"
+  - "100% safe investment"
+  - "double your money"
+  - "effortless wealth"
+  - "no risk involved"

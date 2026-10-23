@@ -1,0 +1,10 @@
+anthropic>=0.40
+pyyaml
+python-dotenv
+requests
+numpy
+opencv-python-headless
+imageio-ffmpeg
+google-api-python-client
+google-auth
+google-auth-oauthlib
