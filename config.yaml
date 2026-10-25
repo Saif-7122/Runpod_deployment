@@ -9,19 +9,35 @@ drive:
   upload_by_default: false
 
 models:
-  vision_model: "claude-sonnet-5-5"     # watches clip frames
-  director_model: "claude-sonnet-5-5"   # writes scripts and picks footage
-  judge_model: "claude-sonnet-5-5"      # scores scripts against brand_voice_rubric.md
+  vision_model: "claude-haiku-5-5"      # FALLBACK only, if the local vision model fails
+  director_model: "claude-sonnet-5-5"   # writes 5 candidate plans per call (the only real Claude spend)
+  judge_model: "claude-haiku-5-5"       # ranks the 5 candidates in one cheap call
+  max_tokens: 64000             # ceiling for thinking + answer (streamed; billed only for what is used)
+  effort:                       # thinking depth per task: low | medium | high | xhigh | max
+    director_model: medium      # creative quality vs cost sweet spot
+    judge_model: low            # scoring against a written rubric
+    vision_model: low
 
 analysis:
   workers: 3                    # clips analysed in parallel
-  vision_frame_width: 768       # px width of frames shown to Claude
-  max_vision_frames: 40         # long clips are sampled evenly down to this
+  vision_provider: local        # local = Qwen2.5-VL on the GPU (free); claude = Haiku (paid fallback)
+  vision_frame_width: 640       # px width of frames shown to the vision model
+  max_vision_frames: 20         # long clips are sampled evenly down to this
   min_ad_score: 6               # Claude score (0-10) needed to approve a segment
   min_short_side_px: 1080       # below this the clip is flagged low_resolution
   make_proxies: true            # 1080-wide proxy per clip -> much faster renders
   keep_frames: false            # true = keep extracted frames for review (uses disk)
-  keep_originals: false         # false = delete the Drive original once its proxy (picture + audio) exists
+  keep_originals: true          # renders use the full-quality original (false = delete it to save disk)
+  footage_guidance: >-
+    This library is mostly authentic site-visit and lifestyle footage (handheld/gimbal walks, guides with
+    visitors, planting, farm life, rustic huts, paths, plantations) plus some aerial/landscape shots.
+    For our Meta lead-ad Reels, real people and real moments are VALUABLE: visitors walking a path, a guide
+    pointing, hands planting, a family feeding cows, a couple under the pergola. People seen from behind are
+    fine when the moment reads. Score for usefulness in an authentic, warm 9:16 ad: 8-10 = beautiful or
+    emotionally strong, 6-7 = clean and usable, 4-5 = usable only as filler, 0-3 = broken.
+    Reject only when the shot is visually broken: badly obstructed (post/trunk/head blocking the subject),
+    nothing readable in frame, ugly clutter as the main subject, awkward moments (mid-blink, picking nose,
+    looking lost), vehicles/number plates as the subject, or a visible lavalier mic in close-up.
   blocking_problems:            # Claude problems that reject a segment
     - competitor_branding
     - construction_mess
@@ -31,6 +47,7 @@ analysis:
 
 audio:                          # clips that already carry meaningful speech (edited videos, testimonials)
   enabled: true
+  stt: whisper                  # whisper = local faster-whisper (free); sarvam = paid API
   stt_url: "https://api.sarvam.ai/speech-to-text"
   stt_model: "saaras:v3"        # verified 2026-10-23
   silence_db: -40               # below = silence when splitting speech into phrases
@@ -42,12 +59,12 @@ audio:                          # clips that already carry meaningful speech (ed
   max_native_s: 15.0
 
 thresholds_clip:                # stage B technical checks; tune on 20-30 of your clips
-  sharp_rel: 0.45               # blurry if sharpness < 45% of the clip's median ...
+  sharp_rel: 0.30               # blurry if sharpness < 30% of the clip's median ...
   sharp_abs: 15                 # ... or below this absolute floor
   dark_mean: 35                 # mean luma below this = too dark
-  clipped_frac: 0.08            # >8% pixels at 250+ = blown out
+  clipped_frac: 0.15            # >15% pixels at 250+ = blown out (bright skies are normal)
   whip_speed: 0.12              # frame-widths moved per 0.25 s = whip-pan
-  shake_jerk: 0.012             # 1 s mean change in motion = shaky
+  shake_jerk: 0.022             # 1 s median jitter; ~90th percentile of the client footage (2026-10-24)
   cut_hist_correl: 0.55         # colour-histogram correlation below this = new shot ...
   cut_track_response: 0.08      # ... or motion tracking lost (low confidence)
   cut_frame_diff: 25            #     while the whole frame changed (mean abs diff, 0-255)
@@ -55,56 +72,116 @@ thresholds_clip:                # stage B technical checks; tune on 20-30 of you
   min_segment_s: 1.5
   max_segment_s: 10
 
+local_models:                   # free models on the RunPod GPU (see LICENSES.md)
+  vlm: "Qwen/Qwen2.5-VL-7B-Instruct"
+  whisper: "large-v3"
+
+video_judge:                    # judges a quick 540x960 draft before the final render (free, local)
+  drafts: 2                     # top-ranked scripts that get a draft
+  use_vlm: true
+  duration_s: [30, 40]
+  min_hook_motion: 2.0          # mean frame change in the first 2 s (0-255 scale)
+  max_speech_start_s: 0.6
+  max_dead_s: 1.0               # longest frozen / black stretch
+  cuts_per_10s: [2.5, 6.5]
+  target_lufs: -14
+  min: {hook: 7, match: 7, overall: 7}   # viewer scores (0-10) from the local vision model
+
 director:
-  default_target_seconds: 20
-  words_per_second: 2.5         # Indian English voiceover pace
+  candidates_per_call: 5        # one Sonnet call writes 5 versions; the judge keeps the best
+  default_style: weekend_home   # styles/<name>.yaml
+  default_target_seconds: 35
+  temperature: 0.9              # variety between versions; the judge runs at 0
+  words_per_second: 2.6         # Indian English voiceover at pace ~1.1
   max_scene_seconds: 3.5        # longest single cut
   max_segments_in_prompt: 120
   max_native_per_video: 1       # clips played with their own audio (testimonial / presenter)
 
 judge:
-  min_score: 80
-  max_attempts: 3
+  max_attempts: 2               # 1 batch of 5 + one retry batch; then dropped (never rendered)
   length_tolerance: 0.15
-  skip_rubric_on_rule_fail: true   # rewrite before paying for the rubric call
+  gate:                         # a plan is produced only if EVERY minimum is met
+    min: {hook: 8, storyboard: 7, content: 7, cta: 7}
+    weights: {hook: 3, storyboard: 2.5, content: 2.5, cta: 2}
+    min_total: 78               # weighted score out of 100
 
 tts:
+  provider: "chatterbox"        # chatterbox | indic_parler | kokoro (free, local GPU) | sarvam | edge
+  chatterbox:                   # MIT. Natural, conversational; exaggeration = expressiveness, cfg_weight lower = brisker
+    exaggeration: 0.55
+    cfg_weight: 0.4
+    reference_wav: ""           # optional 10-20 s clean clip of a voice you have consent to use (Indian-English female)
+  indic_parler:                 # Apache 2.0. Indian-English accent, voice described in words
+    description: "Divya speaks in a warm, friendly, conversational tone with a slightly fast pace and clear Indian English accent. The recording is very clear with no background noise."
+  kokoro: {voice: "bf_emma", lang: "b", speed: 1.05}
   url: "https://api.sarvam.ai/text-to-speech"
   model: "bulbul:v3"            # verified 2026-10-23 (v1, v2 retired)
   speaker: "priya"              # bulbul:v3 voices: priya, kavya, ritu, shubh, advait, ... (samples in workspace/voice_samples)
   request_style: "text"         # "inputs" for the old bulbul:v1 API shape
   language_code: "en-IN"
-  pace: 1.05
+  pace: 1.1                     # a little faster than default, still natural
   sample_rate: 22050
   parallel_requests: 4
   gap_seconds: 0.15
   silence_db: -45
 
 captions:
-  font: "Liberation Sans"
-  fonts_dir: ""                 # pod: /usr/share/fonts/truetype/liberation ; empty = system fonts
-  size: 74
-  overlay_size: 64
-  words_per_caption: 3
-  uppercase: true
-  caption_margin_v: 520         # px from bottom
-  overlay_margin_v: 260         # px from top
+  # Typography spec (professional Reels practice + Meta safe zones), brand fonts/colours from oxygenforest.io.
+  # One palette for the whole video. Fonts ship in ./fonts (SIL Open Font License).
+  fonts_dir: "fonts"
+  safe_zone: {top: 0.14, bottom: 0.35, sides: 0.06}   # keep ALL text out of these bands (Meta Reels UI)
+  palette:                      # hex RGB
+    text: "#FBFAF6"             # warm white
+    accent: "#E4B7A9"           # blush: the word being spoken
+    shadow: "#1C1B15"           # ink: soft shadow / outline
+    panel: "#7A1A17"            # maroon: CTA panel and headline rule
+    deep: "#1A241B"             # deep forest green
+  caption:                      # spoken-word captions, word-by-word highlight
+    font: "Poppins SemiBold"
+    size: 78                    # px on a 1080x1920 frame (readable on a phone)
+    max_chars_per_line: 22
+    max_words: 4                # words on screen at once
+    min_seconds: 0.6
+    y_center: 1180              # px from top: just above the bottom 35% UI band
+    outline: 4
+    shadow: 3
+  headline:                     # overlay headline (2-5 words), editorial serif
+    font: "Fraunces SemiBold"
+    size: 86
+    y_top: 300                  # px from top: just under the top 14% UI band
+    outline: 0
+    shadow: 5
+  end_card:                     # brand + CTA, last seconds of the CTA line
+    brand: "Oxygen Forest"
+    sub: "Pranavayu Vanam · Kamareddy"
+    contact: "WhatsApp +91 81217 77770"
+    seconds: 3.0
 
 rendering:
   video_codec: "libx264"        # "h264_nvenc" on the RunPod 4090 (setup.sh sets this via CE_CODEC)
   nvenc_preset: "p5"
-  cq: 21                        # NVENC quality (lower = better)
-  crf: 20                       # x264 quality
+  cq: 19                        # NVENC quality (lower = better)
+  crf: 18                       # x264 quality
+  x264_preset: "medium"
+  maxrate: "16M"                # high enough that foliage and drone detail survive Meta's re-encode
+  sharpen: true                 # mild unsharp after lanczos downscale
   fps: 30
-  hw_decode: false              # true on the pod if originals (not proxies) are rendered
-  parallel_renders: 4           # simultaneous ffmpeg encodes (4090 NVENC handles 4-8)
+  hw_decode: false              # true on the pod (originals are 4K/2.7K)
+  prefer_originals: true        # render from full-quality originals; proxies only as a fallback
+  parallel_renders: 3           # simultaneous ffmpeg encodes (local models share the same GPU)
   threads: 4                    # CPU threads per render
-  tail_seconds: 0.5             # picture held after the last word
+  tail_seconds: 1.5             # picture held after the last word (end card breathes)
   music_path: ""                # optional background track (ducked under the voice)
   music_volume: 0.15
 
 batch:
-  parallel_videos: 8            # videos in flight (API + render)
+  parallel_videos: 4            # videos in flight (Claude calls overlap with GPU work)
+  max_claude_usd: 5.0           # hard stop for a batch's Claude spend (raise for big runs)
+
+pricing:                        # $ per million tokens [input, output, cache read, cache write]; check anthropic.com/pricing
+  claude-sonnet-5-5: [2.0, 10.0, 0.20, 2.5]
+  claude-haiku-5-5: [0.10, 0.50, 0.01, 0.125]
+  claude-opus-5-5: [4.0, 20.0, 0.20, 5.0]
 
 banned_claims:
   - "100% guaranteed"

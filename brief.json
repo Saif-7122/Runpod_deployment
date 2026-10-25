@@ -1,5 +1,5 @@
 {
-  "project": "",
+  "project": "OXYGEN FOREST CLIENT",
   "campaign_name": "Oxygen Forest - Forest Estates, Kamareddy",
   "product_name": "Oxygen Forest (Pranavayu Vanam) forest estates",
   "facts_source": "https://oxygenforest.io (read 2026-10-23). Use ONLY these facts; never invent numbers.",
@@ -24,9 +24,16 @@
     "urgency": "Bookings close in the next 30 days",
     "contact": "Phone / WhatsApp +91 81217 77770"
   },
-  "taglines_from_site": ["Breathe.", "Own the forest.", "132 estates. Never more.", "Come see it. Decide nothing.", "Managed.", "Far enough to be a forest."],
+  "taglines_from_site": [
+    "Breathe.",
+    "Own the forest.",
+    "132 estates. Never more.",
+    "Come see it. Decide nothing.",
+    "Managed.",
+    "Far enough to be a forest."
+  ],
   "target_audience": "Hyderabad professionals, families and NRIs who want a weekend forest home, a managed farm and a land asset with clear title.",
-  "target_duration_seconds": 20.0,
+  "target_duration_seconds": 35,
   "hook_angle": "Escape city air: own a planted, managed forest estate with 25,000 protected acres on your boundary.",
   "key_value_propositions": [
     "25,000 acres of protected forest around a 160-acre gated community",

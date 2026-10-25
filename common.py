@@ -133,25 +133,92 @@ def extract_json(text):
     return json.loads(text[start:end + 1])
 
 
-def ask_claude_json(cfg, model_key, system, content, max_tokens=4000, cache_system=True):
-    """Send one message and return parsed JSON. Retries once on unparseable output."""
+import threading
+_usage_lock = threading.Lock()
+USAGE = {}          # model -> token counts, for cost reporting per run / batch
+
+
+def usage_snapshot():
+    with _usage_lock:
+        return json.loads(json.dumps(USAGE))
+
+
+# $ per million tokens: input, output, cache read, cache write (list prices, Oct 2026; edit in config.pricing)
+DEFAULT_PRICES = {"claude-opus-5-5": [4.0, 20.0, 0.20, 5.0], "claude-sonnet-5-5": [2.0, 10.0, 0.20, 2.5],
+                  "claude-haiku-5-5": [0.10, 0.50, 0.01, 0.125]}
+
+
+def usage_cost(cfg=None, usage=None):
+    """Dollar cost of the Claude calls made so far in this process."""
+    prices = {**DEFAULT_PRICES, **((cfg or {}).get("pricing") or {})}
+    total = 0.0
+    for model, u in (usage or usage_snapshot()).items():
+        pi, po, pr, pw = prices.get(model, DEFAULT_PRICES["claude-opus-5-5"])
+        total += (u["input"] * pi + u["output"] * po + u["cache_read"] * pr + u["cache_write"] * pw) / 1e6
+    return round(total, 4)
+
+
+class BudgetExceeded(RuntimeError):
+    pass
+
+
+def check_budget(cfg):
+    cap = (cfg.get("batch") or {}).get("max_claude_usd")
+    if cap and usage_cost(cfg) >= cap:
+        raise BudgetExceeded(f"Claude spend ${usage_cost(cfg):.2f} reached the batch cap ${cap:.2f}")
+
+
+def _record_usage(model, u):
+    with _usage_lock:
+        m = USAGE.setdefault(model, {"calls": 0, "input": 0, "output": 0, "cache_read": 0, "cache_write": 0})
+        m["calls"] += 1
+        m["input"] += getattr(u, "input_tokens", 0) or 0
+        m["output"] += getattr(u, "output_tokens", 0) or 0
+        m["cache_read"] += getattr(u, "cache_read_input_tokens", 0) or 0
+        m["cache_write"] += getattr(u, "cache_creation_input_tokens", 0) or 0
+
+
+def ask_claude_json(cfg, model_key, system, content, max_tokens=None, cache_system=True, temperature=None):
+    """One Claude call that returns parsed JSON.
+
+    Current models (Opus 5.5 / Sonnet 5.5) always think before answering; `max_tokens` must cover thinking
+    + answer, so we stream with a generous ceiling (you pay only for tokens actually produced) and set the
+    thinking depth per task with output_config.effort (config models.effort.<model_key>).
+    `temperature` is rejected by these models and is ignored unless models.send_temperature is true.
+    """
     model = cfg["models"][model_key]
+    effort = cfg["models"].get("effort", {}).get(model_key)
+    max_tokens = max_tokens or cfg["models"].get("max_tokens", 64000)
     sys_block = [{"type": "text", "text": system}]
     if cache_system:
         sys_block[0]["cache_control"] = {"type": "ephemeral"}
     messages = [{"role": "user", "content": content}]
+    extra = {}
+    if temperature is not None and cfg["models"].get("send_temperature"):
+        extra["temperature"] = temperature
+    if effort:
+        extra["output_config"] = {"effort": effort}
     last_err = None
+    check_budget(cfg)
     for attempt in range(2):
-        resp = claude_client().messages.create(
-            model=model, max_tokens=max_tokens, system=sys_block, messages=messages)
+        with claude_client().messages.stream(model=model, max_tokens=max_tokens, system=sys_block,
+                                             messages=messages, **extra) as stream:
+            resp = stream.get_final_message()
+        _record_usage(model, resp.usage)
+        if resp.stop_reason == "refusal":
+            raise RuntimeError(f"Claude declined the request ({getattr(resp, 'stop_details', None)})")
         text = "".join(b.text for b in resp.content if b.type == "text")
+        if resp.stop_reason == "max_tokens" and not text:
+            raise RuntimeError(f"Claude used the whole {max_tokens}-token budget thinking; raise models.max_tokens "
+                               f"or lower models.effort.{model_key}")
         try:
             return extract_json(text)
         except (ValueError, json.JSONDecodeError) as e:
             last_err = e
+            # append-only retry: keep the model's full answer (incl. thinking blocks) and ask for JSON only
             messages = messages + [
-                {"role": "assistant", "content": text},
-                {"role": "user", "content": "That was not valid JSON. Reply with only the JSON."},
+                {"role": "assistant", "content": resp.content},
+                {"role": "user", "content": "That was not valid JSON. Reply with only the JSON object."},
             ]
             time.sleep(1)
     raise RuntimeError(f"Claude returned invalid JSON twice: {last_err}")

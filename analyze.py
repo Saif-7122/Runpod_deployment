@@ -49,7 +49,7 @@ def collect_sources(cfg, args):
                 })
         return items
     import drive
-    folder = cfg["drive"]["raw_folder_id"]
+    folder = args.folder or cfg["drive"]["raw_folder_id"]
     return drive.list_videos(folder)
 
 
@@ -299,6 +299,11 @@ def audio_scan(cfg, clip, workdir):
     wav = workdir / "audio16k.wav"
     if not extract_audio(cfg, clip, wav):
         return [], "none"
+    if au.get("stt", "whisper") == "whisper":
+        from local_models import transcribe_lines
+        lines = transcribe_lines(cfg, wav)
+        words = sum(len(l["text"].split()) for l in lines)
+        return (lines, "speech") if words >= au["min_words"] else ([], "music_or_ambient")
     phrases, mean_db = speech_phrases(wav, au)
     if not phrases or mean_db < au["silence_db"] - 10:
         return [], "silent"
@@ -322,9 +327,12 @@ def audio_scan(cfg, clip, workdir):
 
 # ------------------------------------------------------------------ stage C: Claude vision
 
-VISION_SYSTEM = """You are a senior video editor for premium real-estate ads (villas, farmland plots, gated communities in India).
-You review raw footage frame by frame and decide which parts are good enough for a high-retention 9:16 ad.
-You are strict: a segment is only worth keeping if it looks premium, is clearly composed and shows something a buyer cares about.
+VISION_SYSTEM = """You are a senior video editor cutting 9:16 Meta lead-ad Reels for Indian real-estate brands (farmland, forest estates, villas).
+You review raw footage frame by frame and decide which parts are usable, and for what.
+
+What this footage library is and what counts as usable:
+{guidance}
+
 Reply with JSON only."""
 
 
@@ -367,7 +375,7 @@ For EVERY candidate segment return an entry. Return JSON:
     {{
       "segment_id": "<id from the list>",
       "keep": true,
-      "ad_score": <0-10, how premium and useful for an ad>,
+      "ad_score": <0-10, per the scale above>,
       "description": "<one line, concrete: what is visible and what happens, e.g. 'drone rises over villa rooftops; pool visible from 8 s'>",
       "shot_type": "<aerial | exterior | interior | amenity | landscape | road_access | lifestyle | plot | construction | other>",
       "camera_move": "<static | push_in | pull_out | pan | tilt | orbit | rise | descend | tracking | handheld>",
@@ -377,11 +385,20 @@ For EVERY candidate segment return an entry. Return JSON:
       "hero_second": <the single best moment, seconds>,
       "subject_x": <0-1 horizontal centre of the main subject, used for the 9:16 crop>,
       "problems": ["<any of: {blocking}, horizon_tilt, low_resolution, people_background>. text_on_screen = ANY burned-in caption, title or logo text; letterboxed_or_framed = black bars, borders, rounded frame or picture-in-picture"],
-      "reason": "<if keep is false or score < 6, why>"
+      "reason": "<if keep is false or score < 6, the visual problem>"
     }}
   ]
 }}"""})
-    return ask_claude_json(cfg, "vision_model", VISION_SYSTEM, content, max_tokens=4000)
+    system = VISION_SYSTEM.format(guidance=cfg["analysis"].get("footage_guidance", ""))
+    if cfg["analysis"].get("vision_provider", "local") == "local":
+        try:
+            from local_models import vlm_json
+            frames = [(f"t={i / VISION_FPS:.0f}s", vision_frames[i]) for i in idx]
+            prompt = "\n".join(b["text"] for b in content if b["type"] == "text" and not b["text"].startswith("t="))
+            return vlm_json(cfg, system, frames, prompt)
+        except Exception as e:
+            log("analyze", f"local vision failed ({e}); falling back to Claude {cfg['models']['vision_model']}")
+    return ask_claude_json(cfg, "vision_model", system, content)
 
 
 # ------------------------------------------------------------------ stage D + driver
@@ -559,6 +576,9 @@ def main():
     ap.add_argument("--skip", nargs="+", help="skip clips whose folder path contains one of these words")
     ap.add_argument("--max-mb", type=float, default=0, help="skip files bigger than this (MB)")
     ap.add_argument("--min-mb", type=float, default=1, help="skip files smaller than this (MB)")
+    ap.add_argument("--folder", help="Drive folder id to analyse instead of drive.raw_folder_id")
+    ap.add_argument("--sample", type=int, default=0,
+                    help="pick N clips spread evenly through the shoot (by file name / time) instead of smallest-first")
     ap.add_argument("--no-vision", action="store_true", help="technical stage only (no API cost)")
     ap.add_argument("--workers", type=int, default=0)
     ap.add_argument("--config")
@@ -576,6 +596,10 @@ def main():
     if args.max_mb:
         items = [i for i in items if int(i.get("size", 0) or 0) <= args.max_mb * 1e6]
     items = [i for i in items if int(i.get("size", 0) or 0) >= args.min_mb * 1e6 or i.get("_local")]   # tiny = broken / Live Photo
+    if args.sample and len(items) > args.sample:               # even spread across the shoot covers every scene
+        items.sort(key=lambda i: i.get("drive_path", i["name"]))
+        step = len(items) / args.sample
+        items = [items[int(k * step)] for k in range(args.sample)]
     items.sort(key=lambda i: int(i.get("size", 0) or 0))       # small clips first: usable footage builds fast
     todo = []
     for it in items:

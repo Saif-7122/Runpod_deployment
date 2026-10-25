@@ -50,6 +50,24 @@ def sarvam_request(cfg, text):
     raise RuntimeError("Sarvam: too many retries")
 
 
+def edge_request(cfg, text, dst_mp3):
+    """TEMPORARY test voice (Microsoft neural TTS via edge-tts) for when Sarvam has no credit.
+    Enable with tts.provider: edge. Production voice is Sarvam."""
+    import asyncio
+    import edge_tts
+    e = cfg["tts"].get("edge", {})
+    last = None
+    for attempt in range(10):                       # the free endpoint drops connections intermittently
+        try:
+            comm = edge_tts.Communicate(text, e.get("voice", "en-IN-NeerjaNeural"), rate=e.get("rate", "+8%"))
+            asyncio.run(comm.save(str(dst_mp3)))
+            return
+        except Exception as err:
+            last = err
+            time.sleep(min(1.5 * (attempt + 1), 8))
+    raise RuntimeError(f"edge-tts failed after retries: {last}")
+
+
 def trim_and_normalise(cfg, src, dst):
     """Trim leading/trailing silence only (keeps natural pauses inside the sentence)."""
     th = cfg["tts"].get("silence_db", -45)
@@ -105,6 +123,17 @@ def synthesize(cfg, script, run_dir, mock=False, catalog=None):
             native_audio(cfg, clip, seg, out)
         elif mock:
             mock_audio(cfg, s["text"], out)
+        elif cfg["tts"].get("provider") in ("chatterbox", "indic_parler", "kokoro"):
+            from local_models import synthesize_local
+            raw = adir / f"{s['id']}_raw.wav"
+            synthesize_local(cfg, s["text"], raw)
+            trim_and_normalise(cfg, raw, out)
+            raw.unlink(missing_ok=True)
+        elif cfg["tts"].get("provider") == "edge":
+            raw = adir / f"{s['id']}_raw.mp3"
+            edge_request(cfg, s["text"], raw)
+            trim_and_normalise(cfg, raw, out)
+            raw.unlink(missing_ok=True)
         else:
             raw = adir / f"{s['id']}_raw.wav"
             raw.write_bytes(sarvam_request(cfg, s["text"]))
@@ -113,7 +142,8 @@ def synthesize(cfg, script, run_dir, mock=False, catalog=None):
         return {"id": s["id"], "path": str(out), "duration": round(wav_duration(out), 3),
                 "native": s.get("caption_style") == "native"}
 
-    with ThreadPoolExecutor(max_workers=cfg["tts"].get("parallel_requests", 4)) as pool:
+    workers = 1 if cfg["tts"].get("provider") != "sarvam" else cfg["tts"].get("parallel_requests", 4)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
         parts = list(pool.map(one, script["sentences"]))
 
     # join with a short breath between sentences

@@ -39,14 +39,18 @@ fi
 echo "== 3/5 python packages"
 pip install -q --upgrade pip
 pip install -q -r "$REPO_DIR/requirements.txt"
+echo "   local GPU models (voice, vision, speech-to-text)"
+pip install -q -r "$REPO_DIR/requirements-gpu.txt"
+export HF_HOME=/workspace/hf_cache          # model weights persist on the volume between pod restarts
 
 echo "== 4/5 environment file"
 cat > /workspace/ce_env.sh <<EOF
 export CE_WORKSPACE="$DATA_DIR"
 export CE_CODEC=h264_nvenc
-export CE_FONTS_DIR=/usr/share/fonts/truetype/liberation
+export CE_HW_DECODE=1
 export FFMPEG_BIN="$FFMPEG"
 export N8N_USER_FOLDER=/workspace/.n8n
+export HF_HOME=/workspace/hf_cache
 EOF
 grep -q ce_env.sh ~/.bashrc 2>/dev/null || echo "source /workspace/ce_env.sh" >> ~/.bashrc
 

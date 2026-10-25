@@ -1,0 +1,67 @@
+# Style pack: Weekend home (Oxygen Forest and similar managed farmland / forest estates)
+# Used by the director (to plan) and the judge (to score). Edit freely; new styles = new files in styles/.
+
+name: weekend_home
+format: "Instagram / Facebook Reel used as a Meta lead ad"
+platform: "Meta (Instagram Reels, Facebook Reels)"
+objective: "Leads: hosted site-visit bookings and WhatsApp enquiries"
+aspect_ratio: "9:16"
+duration_seconds: [30, 40]
+
+audience:
+  who: "Hyderabad professionals (30-50), young families and NRIs who want a weekend escape and a land asset"
+  cares_about: ["clean air and quiet", "time with family", "a place that is theirs", "low-effort ownership", "trust in the developer"]
+  problems: ["weekday city stress, traffic, pollution", "no green space", "farmland is hard to maintain from the city"]
+  objections:
+    - "Too far? -> about 2 hours, 25,000 protected acres only exist that far out"
+    - "Who looks after it? -> resident farm team, every day"
+    - "Is it legal/safe? -> registered land, clear title, documents before you commit"
+    - "Is this a hard sell? -> hosted visit, no pressure, decide nothing"
+
+# Proven patterns for land/real-estate Reels ads (research 2026-10-24, see README):
+#  - the first 1-3 s decide retention: open on motion or a line about the viewer's own life
+#  - emotional ownership story beats a price-led pitch; price is a supporting proof, never the hook
+#  - answer the practical question (where / how far / who maintains) inside the video
+#  - social proof (owners' own words) builds trust; brand reveal after the hook, not before
+#  - text inside the safe zone; one idea per video
+angles:
+  - "Weekday vs weekend (problem -> solution)"
+  - "A Saturday here (day-in-the-life, cinematic)"
+  - "Owners' words (testimonial-led)"
+  - "What you actually own (clarity / trust)"
+  - "Managed for you (the farm team does the work)"
+  - "Scarcity: 132 estates, never more"
+
+structure:          # the script and storyboard must follow this beat order (timings flexible)
+  - beat: hook
+    seconds: [2, 4]
+    purpose: "Stop the scroll. Motion-led shot + a line about the viewer's life or a vivid image. No logo, no price."
+  - beat: context
+    seconds: [4, 8]
+    purpose: "The tension: city weekdays / what they're missing, or the 'what if' set-up."
+  - beat: main
+    seconds: [10, 16]
+    purpose: "The experience and the specifics: forest around you, 450+ trees, farm team, the pond, the plantation."
+  - beat: proof
+    seconds: [4, 8]
+    purpose: "Trust: an owner's own words, or hard facts (registered land, clear title, 132 estates, from ₹70 lakhs)."
+  - beat: payoff
+    seconds: [2, 4]
+    purpose: "Why it matters: what owning this feels like."
+  - beat: cta
+    seconds: [3, 5]
+    purpose: "One clear action: book a hosted weekend visit / WhatsApp for the price sheet."
+
+script_rules:
+  - "Write like a person talking to a friend, not an announcer: contractions, short sentences, natural rhythm."
+  - "Second person ('you', 'your'). Concrete images over adjectives."
+  - "One core idea per video; at most 3 supporting facts."
+  - "Every fact must come from the brief's facts list. No invented numbers, no returns or appreciation promises."
+  - "Numbers are written the way they should be spoken (e.g. 'four hundred and fifty trees')."
+
+voice:
+  tone: "warm, friendly, conversational, gently smiling; never a news reader"
+
+look:
+  feel: "calm, premium, natural light, unhurried but not slow"
+  cut_length_seconds: [1.5, 3.5]

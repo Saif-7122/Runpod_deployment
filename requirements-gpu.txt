@@ -1,0 +1,10 @@
+# Free local models for the RunPod GPU (installed by setup.sh). Licences: LICENSES.md
+# torch comes with the RunPod PyTorch template (CUDA 12.x)
+transformers>=4.49
+accelerate
+qwen-vl-utils
+faster-whisper
+soundfile
+chatterbox-tts
+git+https://github.com/huggingface/parler-tts.git
+kokoro
