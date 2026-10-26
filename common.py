@@ -24,10 +24,24 @@ def log(tag, msg):
     print(f"[{datetime.now():%H:%M:%S}] [{tag}] {msg}", file=sys.stderr, flush=True)
 
 
+def _deep_merge(base, over):
+    for k, v in over.items():
+        if isinstance(v, dict) and isinstance(base.get(k), dict):
+            _deep_merge(base[k], v)
+        else:
+            base[k] = v
+    return base
+
+
 def load_config(path=None):
     path = Path(path or os.environ.get("CE_CONFIG", ROOT / "config.yaml"))
     with open(path, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f) or {}
+    # profile overrides, e.g. CE_PROFILE=pc -> profiles/pc.yaml (deep-merged over config.yaml)
+    prof = os.environ.get("CE_PROFILE")
+    if prof:
+        with open(ROOT / "profiles" / f"{prof}.yaml", "r", encoding="utf-8") as f:
+            _deep_merge(cfg, yaml.safe_load(f) or {})
     if os.environ.get("CE_CODEC"):
         cfg["rendering"]["video_codec"] = os.environ["CE_CODEC"]
     if os.environ.get("CE_HW_DECODE"):
@@ -178,7 +192,7 @@ def _record_usage(model, u):
         m["cache_write"] += getattr(u, "cache_creation_input_tokens", 0) or 0
 
 
-def ask_claude_json(cfg, model_key, system, content, max_tokens=None, cache_system=True, temperature=None):
+def ask_claude_json(cfg, model_key, system, content, max_tokens=None, cache_system=True, temperature=None, schema=None):
     """One Claude call that returns parsed JSON.
 
     Current models (Opus 5.5 / Sonnet 5.5) always think before answering; `max_tokens` must cover thinking
@@ -186,6 +200,15 @@ def ask_claude_json(cfg, model_key, system, content, max_tokens=None, cache_syst
     thinking depth per task with output_config.effort (config models.effort.<model_key>).
     `temperature` is rejected by these models and is ignored unless models.send_temperature is true.
     """
+    if cfg.get("llm_provider") == "local" and model_key in ("director_model", "judge_model"):
+        from local_models import llm_json            # free local Qwen3 on the GPU, no Claude spend
+        last_err = None
+        for attempt in range(2):
+            try:
+                return llm_json(cfg, system, content, schema=schema)
+            except (ValueError, json.JSONDecodeError) as e:
+                last_err = e
+        raise RuntimeError(f"local LLM returned invalid JSON twice: {last_err}")
     model = cfg["models"][model_key]
     effort = cfg["models"].get("effort", {}).get(model_key)
     max_tokens = max_tokens or cfg["models"].get("max_tokens", 64000)

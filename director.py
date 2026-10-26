@@ -90,11 +90,11 @@ def to_aliases(plan, amap):
 
 
 def segment_table(segs):
-    lines = ["shot | shot_type | camera_move | score | usable_s | hero_at | description | tags"]
+    lines = ["shot | shot_type | scale | camera_move | score | usable_s | hero_at | description | tags"]
     for s in segs:
         if s.get("native_audio"):
             continue
-        lines.append(f"{s['alias']} | {s['shot_type']} | {s['camera_move']} | {s['ad_score']} | "
+        lines.append(f"{s['alias']} | {s['shot_type']} | {s.get('shot_scale') or '-'} | {s['camera_move']} | {s['ad_score']} | "
                      f"{s['usable_s']} | {round(s['hero_second'] - s['in'], 1)} | {s['description']} | "
                      f"{', '.join(s.get('tags', []))}")
     return "\n".join(lines)
@@ -247,7 +247,7 @@ BRAND RUBRIC
 BRIEF (the only facts you may state)
 {brief}
 
-APPROVED FOOTAGE (shot code | shot_type | camera_move | score | usable_s | hero_at | description | tags)
+APPROVED FOOTAGE (shot code | shot_type | scale | camera_move | score | usable_s | hero_at | description | tags)
 {footage}
 
 CLIPS WITH THEIR OWN MEANINGFUL AUDIO (play as they are, never under the voiceover)
@@ -281,7 +281,116 @@ def batch_system(cfg, brief, style, segs):
         max_native=d["max_native_per_video"])
 
 
-def generate_candidates(cfg, brief, catalog, style, angle=None, n=None, avoid_hooks=None, feedback=None):
+BEATS = ["hook", "context", "main", "proof", "payoff", "cta"]
+
+VERSION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "core_idea": {"type": "string"},
+        "video_title": {"type": "string"},
+        "sentences": {"type": "array", "minItems": 9, "maxItems": 11, "items": {
+            "type": "object",
+            "properties": {
+                "beat": {"type": "string", "enum": BEATS},
+                "text": {"type": "string"},
+                "segment_ids": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"type": "string"}},
+                "overlay": {"type": "string"},
+                "caption_style": {"type": "string", "enum": ["hook", "normal", "cta"]}},
+            "required": ["beat", "text", "segment_ids", "overlay", "caption_style"]}},
+        "post_caption": {"type": "string"},
+        "hashtags": {"type": "array", "minItems": 5, "maxItems": 10, "items": {"type": "string"}}},
+    "required": ["core_idea", "video_title", "sentences", "post_caption", "hashtags"],
+}
+
+LOCAL_EXAMPLE = """Example of the SHAPE only (write your own words and pick your own shots):
+{"core_idea": "...", "video_title": "...",
+ "sentences": [
+  {"beat": "hook", "text": "<10-12 words>", "segment_ids": ["F03"], "overlay": "<2-4 words>", "caption_style": "hook"},
+  {"beat": "context", "text": "<10-14 words>", "segment_ids": ["F05", "F12"], "overlay": "", "caption_style": "normal"},
+  {"beat": "main", "text": "<10-14 words>", "segment_ids": ["F01", "F02"], "overlay": "<2-4 words>", "caption_style": "normal"},
+  {"beat": "main", "text": "<10-14 words>", "segment_ids": ["F25", "F06"], "overlay": "", "caption_style": "normal"},
+  {"beat": "main", "text": "<8-12 words>", "segment_ids": ["F26", "F11"], "overlay": "", "caption_style": "normal"},
+  {"beat": "proof", "text": "<12-15 words>", "segment_ids": ["F27", "F30"], "overlay": "<2-4 words>", "caption_style": "normal"},
+  {"beat": "payoff", "text": "<8-10 words>", "segment_ids": ["F09", "F12"], "overlay": "", "caption_style": "normal"},
+  {"beat": "cta", "text": "<10-13 words>", "segment_ids": ["F21", "F33"], "overlay": "Book a hosted visit", "caption_style": "cta"}],
+ "post_caption": "...", "hashtags": ["#OxygenForest", "..."]}"""
+
+
+def _local_version(cfg, brief, style, segs, angle, avoid_hooks, feedback, k):
+    """Small local models do better with ONE complete version per call, a full example and a schema."""
+    lo, hi = style.get("duration_seconds", [30, 40])
+    wps = cfg["director"]["words_per_second"]
+    ask = [f"ANGLE: {json.dumps(angle or {}, ensure_ascii=False)}",
+           f"Write ONE complete video plan (version {k + 1}): 9-11 lines of 11-15 words each, covering the beats in order "
+           f"hook, context, main (2-3 lines), proof, payoff, cta. TOTAL {round(lo * wps)}-{round(hi * wps)} spoken words "
+           f"({lo}-{hi} seconds). Every line uses 1-3 shot codes from the footage table whose description matches it.",
+           LOCAL_EXAMPLE]
+    if avoid_hooks:
+        ask.append("Do NOT reuse these hooks:\n- " + "\n- ".join(avoid_hooks))
+    if feedback:
+        ask.append("Avoid last round's problems:\n- " + "\n- ".join(feedback[:6]))
+    return ask_claude_json(cfg, "director_model", batch_system(cfg, brief, style, segs), "\n\n".join(ask),
+                           schema=VERSION_SCHEMA)
+
+
+POLISH_SYSTEM = """You are a senior Reels copywriter. You rewrite voiceover lines so they sound like a warm, real person talking to a friend - never like an ad or a news reader.
+
+How it should sound (examples of the target voice):
+- "Two hours from the smog, the road turns green."
+- "Saturday morning, you swap weekday stress for this. Big sky, flowers, quiet."
+- "You plant a sapling. Your estate holds over four hundred and fifty trees."
+- "Your little one feeds the calf. Your mum gets the swing."
+- "It's registered land with clear title, and you see the documents before you commit."
+- "Come see it, decide nothing. Tap below to book your hosted weekend visit."
+
+Rules: contractions; short, rhythmic sentences; speak to "you"; concrete images over labels; no colons or lists;
+keep EVERY fact and number exactly as given (do not add any new fact or number); keep each line about the same length
+(within 3 words); overlays are 2-5 word sentence-case headlines that add meaning (never a single label like "Scarcity").
+Reply with JSON only."""
+
+
+def polish(cfg, plan):
+    """Free local pass that rewrites lines for a natural spoken voice. Shots, beats and line count stay fixed."""
+    n = len(plan["sentences"])
+    lines = [{"beat": s.get("beat"), "text": s["text"], "overlay": s.get("overlay", "")} for s in plan["sentences"]]
+    schema = {"type": "object", "required": ["lines"], "properties": {"lines": {
+        "type": "array", "minItems": n, "maxItems": n, "items": {
+            "type": "object", "required": ["text", "overlay"],
+            "properties": {"text": {"type": "string"}, "overlay": {"type": "string"}}}}}}
+    data = ask_claude_json(cfg, "director_model", POLISH_SYSTEM,
+                           "Rewrite these lines in the target voice, same order and count:\n" +
+                           json.dumps(lines, ensure_ascii=False), schema=schema)
+    import copy
+    out = copy.deepcopy(plan)
+    for s, new in zip(out["sentences"], data.get("lines", [])):
+        if new.get("text", "").strip():
+            s["text"] = new["text"].strip()
+        if s.get("overlay") and new.get("overlay", "").strip():
+            s["overlay"] = new["overlay"].strip()
+    out["polished"] = True
+    return out
+
+
+LANGUAGE_NOTES = {
+    "en": "LANGUAGE: English (Indian English, conversational).",
+    "te": ("LANGUAGE: Telugu. Write every spoken line, overlay and the post caption in natural, conversational Telugu "
+           "(Telugu script), the way people in Hyderabad actually talk - warm, simple, not textbook Telugu. "
+           "Keep English words Telugu speakers naturally use (weekend, farm, site visit, estate, WhatsApp, Hyderabad). "
+           "Write numbers in Telugu words or as digits exactly as in the facts. Hashtags may be English."),
+    "hi": ("LANGUAGE: Hindi. Write every spoken line, overlay and the post caption in natural, conversational Hindi "
+           "(Devanagari script), the everyday Hindi people in Hyderabad and North India speak - warm and simple, light "
+           "Hinglish is fine (weekend, farm, site visit, estate, WhatsApp). Not formal or Sanskritised Hindi. "
+           "Write numbers in Hindi words or as digits exactly as in the facts. Hashtags may be English."),
+}
+
+
+def wps_for(cfg, plan_or_lang):
+    lang = plan_or_lang if isinstance(plan_or_lang, str) else (plan_or_lang or {}).get("language", "en")
+    by = cfg["director"].get("words_per_second_by_language") or {}
+    return by.get(lang, cfg["director"]["words_per_second"])
+
+
+def generate_candidates(cfg, brief, catalog, style, angle=None, n=None, avoid_hooks=None, feedback=None, language="en"):
     """ONE Claude call -> n complete video plans (different hooks/approaches within the angle).
     The system prompt (style, rubric, brief, footage) is identical across a batch, so it is cached."""
     n = n or cfg["director"].get("candidates_per_call", 5)
@@ -290,7 +399,10 @@ def generate_candidates(cfg, brief, catalog, style, angle=None, n=None, avoid_ho
         raise RuntimeError("No approved segments in the catalog. Run analyze.py first.")
     amap = assign_aliases(segs)
     lo, hi = style.get("duration_seconds", [30, 40])
-    ask = [f"ANGLE: {json.dumps(angle or {}, ensure_ascii=False)}",
+    wps = wps_for(cfg, language)
+    ask = [LANGUAGE_NOTES.get(language, LANGUAGE_NOTES["en"]),
+           f"Spoken length {lo}-{hi} s = about {round(lo * wps)}-{round(hi * wps)} words in this language.",
+           f"ANGLE: {json.dumps(angle or {}, ensure_ascii=False)}",
            f"Write {n} clearly different versions for this angle (different hooks, different shot choices, "
            f"same core facts). Each must stand alone as a finished plan."]
     if avoid_hooks:
@@ -309,7 +421,10 @@ def generate_candidates(cfg, brief, catalog, style, angle=None, n=None, avoid_ho
    "hashtags": ["<6-10>"]}
 ]}
 The last line has beat "cta" and caption_style "cta". Keep it compact: no extra fields.""")
-    data = ask_claude_json(cfg, "director_model", batch_system(cfg, brief, style, segs), "\n\n".join(ask))
+    if cfg.get("llm_provider") == "local":
+        data = {"versions": [_local_version(cfg, brief, style, segs, angle, avoid_hooks, feedback, k) for k in range(n)]}
+    else:
+        data = ask_claude_json(cfg, "director_model", batch_system(cfg, brief, style, segs), "\n\n".join(ask))
     out = []
     for v in data.get("versions", [])[:n]:
         v = resolve_aliases(v, amap)
@@ -320,7 +435,7 @@ The last line has beat "cta" and caption_style "cta". Keep it compact: no extra 
             if s.get("native_segment_id"):
                 s["segment_ids"] = [s["native_segment_id"]]
                 s["caption_style"] = "native"
-        v.update(angle=(angle or {}).get("angle"), target_seconds=(lo + hi) / 2, duration_range=[lo, hi],
+        v.update(angle=(angle or {}).get("angle"), language=language, target_seconds=(lo + hi) / 2, duration_range=[lo, hi],
                  style=style.get("name"), project=brief.get("project"))
         out.append(v)
     return out, segs

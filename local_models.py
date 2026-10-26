@@ -126,6 +126,81 @@ def vlm_json(cfg, system, frames, prompt, max_new_tokens=3000):
     return extract_json(reply)
 
 
+# ------------------------------------------------------------------ text LLM (scripts + judge), replaces Claude
+
+def _load_llm(name):
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+    q = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_quant_type="nf4")
+    tok = AutoTokenizer.from_pretrained(name)
+    model = AutoModelForCausalLM.from_pretrained(name, quantization_config=q, device_map=_device())
+    return model, tok
+
+
+def _load_llama_cpp(lm):
+    import os
+    import sys
+    if sys.platform == "win32":                     # llama.cpp's CUDA build reuses the CUDA DLLs shipped with torch
+        import torch
+        os.add_dll_directory(os.path.join(os.path.dirname(torch.__file__), "lib"))
+    from huggingface_hub import hf_hub_download
+    from llama_cpp import Llama
+    path = lm.get("llm_gguf_path") or hf_hub_download(lm["llm_gguf_repo"], lm["llm_gguf_file"])
+    return Llama(model_path=path, n_gpu_layers=-1, n_ctx=lm.get("llm_ctx", 16384), flash_attn=True,
+                 type_k=8, type_v=8, verbose=False)        # q8 KV cache: fits long prompts on a 4 GB GPU
+
+
+def llm_json(cfg, system, user, max_new_tokens=None, schema=None):
+    """Local Qwen3 (Apache 2.0) returning parsed JSON. Free; slower and less sharp than Claude.
+    Backend llama_cpp (GGUF, fast on small GPUs, JSON-constrained) or transformers (4-bit)."""
+    from common import extract_json
+    lm = cfg["local_models"]
+    name = lm.get("llm", "Qwen/Qwen3-14B")
+    if isinstance(user, list):                      # text blocks only (no images for the text model)
+        user = "\n".join(b.get("text", "") for b in user if isinstance(b, dict) and b.get("type") == "text")
+    if lm.get("llm_backend") == "llama_cpp":
+        with GPU_LOCK:
+            llm = _swap("llm_gguf", lambda: _load_llama_cpp(lm))
+            r = llm.create_chat_completion(
+                messages=[{"role": "system", "content": system},
+                          {"role": "user", "content": user + "\n\nReply with JSON only. /no_think"}],
+                max_tokens=max_new_tokens or lm.get("llm_max_new_tokens", 6000), temperature=0.8, top_p=0.95,
+                seed=__import__("random").randint(1, 2**31 - 1),
+                response_format={"type": "json_object", **({"schema": schema} if schema else {})})
+        reply = r["choices"][0]["message"]["content"]
+        log("llm", f"{r['usage']['prompt_tokens']} prompt + {r['usage']['completion_tokens']} output tokens")
+        if "</think>" in reply:
+            reply = reply.split("</think>", 1)[1]
+        return extract_json(reply)
+    messages = [{"role": "system", "content": system}, {"role": "user", "content": user + "\n\nReply with JSON only."}]
+    with GPU_LOCK:
+        model, tok = _swap("llm", lambda: _load_llm(name))
+        try:
+            text = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True,
+                                           enable_thinking=lm.get("llm_thinking", False))
+        except TypeError:                           # tokenizers without the Qwen3 thinking switch
+            text = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        inputs = tok([text], return_tensors="pt").to(model.device)
+        ids = inputs.input_ids
+        # Chunked prefill: feed the long prompt in pieces into the KV cache so attention never builds a
+        # (prompt x prompt) matrix at once (Windows / small GPUs have no memory-efficient attention kernel).
+        import torch
+        from transformers import DynamicCache
+        cache, chunk = DynamicCache(), lm.get("llm_prefill_chunk", 1024)
+        with torch.no_grad():
+            for s in range(0, ids.shape[1] - 1, chunk):
+                e = min(s + chunk, ids.shape[1] - 1)
+                model(input_ids=ids[:, s:e], past_key_values=cache, use_cache=True, logits_to_keep=1)
+        log("llm", f"prompt {ids.shape[1]} tokens prefilled")
+        out = model.generate(input_ids=ids, attention_mask=inputs.attention_mask, past_key_values=cache,
+                             max_new_tokens=max_new_tokens or lm.get("llm_max_new_tokens", 7000),
+                             do_sample=True, temperature=0.8, top_p=0.95)
+        reply = tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True)
+    if "</think>" in reply:
+        reply = reply.split("</think>", 1)[1]
+    return extract_json(reply)
+
+
 # ------------------------------------------------------------------ speech-to-text (Whisper)
 
 def _load_whisper(size):

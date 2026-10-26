@@ -4,12 +4,16 @@
 workspace: "./workspace"
 
 drive:
-  raw_folder_id: "12sr-Z52Cc50QifU3-3qfDQpXAt4DevNi"   # raw clips; first-level subfolders = projects
-  output_folder_id: "1aLI-xTyuZqMG1uDX51Axkhhjz0oVZiFj"         # finished videos land in a dated subfolder here
+  raw_folder_id: "12sr-Z52Cc50QifU3-3qfDQpXAt4DevNi"   # (single-folder fallback)
+  raw_folder_ids:                                       # every footage source analysed for the catalog
+    - "12sr-Z52Cc50QifU3-3qfDQpXAt4DevNi"               # Footage (full library)
+    - "1cn-nlMKwUUdKk8qqd4eHejyLSEcQ6fVF"               # OXYGEN FOREST CLIENT (Oct 2026 shoot)
+  output_folder_id: "1aLI-xTyuZqMG1uDX51Axkhhjz0oVZiFj"         # finished videos + captions are uploaded here
   upload_by_default: false
+  dated_subfolder: false        # true = OUTPUT/<date>/...; false = straight into the OUTPUT folder
 
 models:
-  vision_model: "claude-haiku-5-5"      # FALLBACK only, if the local vision model fails
+  vision_model: "claude-haiku-5-5"      # clip review (once per clip) and draft-video viewer check
   director_model: "claude-sonnet-5-5"   # writes 5 candidate plans per call (the only real Claude spend)
   judge_model: "claude-haiku-5-5"       # ranks the 5 candidates in one cheap call
   max_tokens: 64000             # ceiling for thinking + answer (streamed; billed only for what is used)
@@ -20,7 +24,7 @@ models:
 
 analysis:
   workers: 3                    # clips analysed in parallel
-  vision_provider: local        # local = Qwen2.5-VL on the GPU (free); claude = Haiku (paid fallback)
+  vision_provider: claude       # claude = Haiku (~$0.005 per clip, once); local = Qwen2.5-VL (not used)
   vision_frame_width: 640       # px width of frames shown to the vision model
   max_vision_frames: 20         # long clips are sampled evenly down to this
   min_ad_score: 6               # Claude score (0-10) needed to approve a segment
@@ -47,7 +51,7 @@ analysis:
 
 audio:                          # clips that already carry meaningful speech (edited videos, testimonials)
   enabled: true
-  stt: whisper                  # whisper = local faster-whisper (free); sarvam = paid API
+  stt: sarvam                   # sarvam (English + Telugu); whisper = local (not used)
   stt_url: "https://api.sarvam.ai/speech-to-text"
   stt_model: "saaras:v3"        # verified 2026-10-23
   silence_db: -40               # below = silence when splitting speech into phrases
@@ -79,6 +83,7 @@ local_models:                   # free models on the RunPod GPU (see LICENSES.md
 video_judge:                    # judges a quick 540x960 draft before the final render (free, local)
   drafts: 2                     # top-ranked scripts that get a draft
   use_vlm: true
+  viewer: claude                # claude (Haiku, ~$0.001 per draft) | local
   duration_s: [30, 40]
   min_hook_motion: 2.0          # mean frame change in the first 2 s (0-255 scale)
   max_speech_start_s: 0.6
@@ -93,6 +98,7 @@ director:
   default_target_seconds: 35
   temperature: 0.9              # variety between versions; the judge runs at 0
   words_per_second: 2.6         # Indian English voiceover at pace ~1.1
+  words_per_second_by_language: {en: 2.6, te: 2.0, hi: 2.5}   # Telugu words are longer; recalibrate from real voiceovers
   max_scene_seconds: 3.5        # longest single cut
   max_segments_in_prompt: 120
   max_native_per_video: 1       # clips played with their own audio (testimonial / presenter)
@@ -106,20 +112,18 @@ judge:
     min_total: 78               # weighted score out of 100
 
 tts:
-  provider: "chatterbox"        # chatterbox | indic_parler | kokoro (free, local GPU) | sarvam | edge
-  chatterbox:                   # MIT. Natural, conversational; exaggeration = expressiveness, cfg_weight lower = brisker
-    exaggeration: 0.55
-    cfg_weight: 0.4
-    reference_wav: ""           # optional 10-20 s clean clip of a voice you have consent to use (Indian-English female)
-  indic_parler:                 # Apache 2.0. Indian-English accent, voice described in words
-    description: "Divya speaks in a warm, friendly, conversational tone with a slightly fast pace and clear Indian English accent. The recording is very clear with no background noise."
-  kokoro: {voice: "bf_emma", lang: "b", speed: 1.05}
+  provider: "sarvam"            # Sarvam bulbul:v3 only (English + Telugu)
   url: "https://api.sarvam.ai/text-to-speech"
   model: "bulbul:v3"            # verified 2026-10-23 (v1, v2 retired)
   speaker: "priya"              # bulbul:v3 voices: priya, kavya, ritu, shubh, advait, ... (samples in workspace/voice_samples)
   request_style: "text"         # "inputs" for the old bulbul:v1 API shape
   language_code: "en-IN"
   pace: 1.1                     # a little faster than default, still natural
+  pitch_semitones: 0.8          # slightly higher = sweeter; applied after Sarvam, does not change speed
+  languages:                    # per-language overrides
+    en: {language_code: "en-IN"}
+    te: {language_code: "te-IN"}
+    hi: {language_code: "hi-IN"}
   sample_rate: 22050
   parallel_requests: 4
   gap_seconds: 0.15
@@ -151,6 +155,13 @@ captions:
     y_top: 300                  # px from top: just under the top 14% UI band
     outline: 0
     shadow: 5
+  languages:                    # font overrides per script language
+    te:
+      caption: {font: "Noto Sans Telugu SemiBold", size: 70}
+      headline: {font: "Noto Sans Telugu", size: 78}
+    hi:                         # Poppins has Devanagari; Fraunces does not
+      caption: {font: "Poppins SemiBold", size: 72}
+      headline: {font: "Poppins SemiBold", size: 76}
   end_card:                     # brand + CTA, last seconds of the CTA line
     brand: "Oxygen Forest"
     sub: "Pranavayu Vanam · Kamareddy"
@@ -168,15 +179,15 @@ rendering:
   fps: 30
   hw_decode: false              # true on the pod (originals are 4K/2.7K)
   prefer_originals: true        # render from full-quality originals; proxies only as a fallback
-  parallel_renders: 3           # simultaneous ffmpeg encodes (local models share the same GPU)
+  parallel_renders: 4           # simultaneous NVENC encodes on the 4090
   threads: 4                    # CPU threads per render
   tail_seconds: 1.5             # picture held after the last word (end card breathes)
   music_path: ""                # optional background track (ducked under the voice)
   music_volume: 0.15
 
 batch:
-  parallel_videos: 4            # videos in flight (Claude calls overlap with GPU work)
-  max_claude_usd: 5.0           # hard stop for a batch's Claude spend (raise for big runs)
+  parallel_videos: 10           # videos in flight: Claude/Sarvam calls overlap with GPU renders (50/hour target)
+  max_claude_usd: 6.0           # hard stop for a batch's Claude spend (~$0.06/video incl. clip review)
 
 pricing:                        # $ per million tokens [input, output, cache read, cache write]; check anthropic.com/pricing
   claude-sonnet-5-5: [2.0, 10.0, 0.20, 2.5]

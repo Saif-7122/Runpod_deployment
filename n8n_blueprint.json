@@ -1,43 +1,96 @@
 {
-  "name": "Content Engine v1.2",
+  "name": "Make Oxygen Forest reels (form)",
   "nodes": [
     {
-      "parameters": {},
-      "id": "a1",
-      "name": "Start",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        200,
-        300
-      ]
-    },
-    {
       "parameters": {
-        "values": {
-          "number": [
+        "formTitle": "Make Oxygen Forest reels",
+        "formDescription": "Fill this in and press Submit. Videos (9:16, 30-40 s, with captions and a post caption) appear in the Drive OUTPUT folder as they finish - about 50 per hour.",
+        "formFields": {
+          "values": [
             {
-              "name": "variants",
-              "value": 10
+              "fieldLabel": "How many videos?",
+              "fieldType": "number",
+              "placeholder": "10",
+              "requiredField": true
             },
             {
-              "name": "parallel",
-              "value": 8
-            }
-          ],
-          "string": [
+              "fieldLabel": "Language",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "English + Telugu + Hindi"
+                  },
+                  {
+                    "option": "English + Telugu"
+                  },
+                  {
+                    "option": "English + Hindi"
+                  },
+                  {
+                    "option": "English"
+                  },
+                  {
+                    "option": "Telugu"
+                  },
+                  {
+                    "option": "Hindi"
+                  }
+                ]
+              }
+            },
             {
-              "name": "brief",
-              "value": "brief.json"
+              "fieldLabel": "Style",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Weekend home"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "New clips added to Drive since last time?",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "No"
+                  },
+                  {
+                    "option": "Yes"
+                  }
+                ]
+              }
             }
           ]
         },
-        "options": {}
+        "options": {
+          "formSubmittedText": "Started! Your videos will appear in the Drive OUTPUT folder over the next hour. You can close this page."
+        }
       },
-      "id": "a2",
-      "name": "Batch settings",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
+      "id": "f1",
+      "name": "Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "oxygen-forest-reels"
+    },
+    {
+      "parameters": {
+        "jsCode": "const f = $input.first().json;\nconst n = Math.max(1, Math.min(200, parseInt(f['How many videos?'] || '10', 10) || 10));\nconst langs = { 'English + Telugu + Hindi': 'en te hi', 'English + Telugu': 'en te', 'English + Hindi': 'en hi', 'English': 'en', 'Telugu': 'te', 'Hindi': 'hi' }[f['Language']] || 'en te hi';\nconst style = { 'Weekend home': 'weekend_home' }[f['Style']] || 'weekend_home';\nconst analyse = f['New clips added to Drive since last time?'] === 'Yes' ? 'yes' : 'no';\nreturn [{ json: { cmd: `bash -lc 'nohup /workspace/make_videos.sh ${n} \"${langs}\" ${style} ${analyse} > /dev/null 2>&1 &'` } }];"
+      },
+      "id": "f2",
+      "name": "Build command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         420,
         300
@@ -45,83 +98,35 @@
     },
     {
       "parameters": {
-        "command": "bash -lc 'source /workspace/ce_env.sh && cd /workspace && python3 analyze.py --drive 2>&1 | tail -5'"
+        "command": "={{ $json.cmd }}"
       },
-      "id": "a3",
-      "name": "Analyze new clips",
+      "id": "f3",
+      "name": "Start pipeline",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
         640,
         300
       ]
-    },
-    {
-      "parameters": {
-        "command": "=bash -lc 'source /workspace/ce_env.sh && cd /workspace && python3 run.py --brief {{$node[\"Batch settings\"].json[\"brief\"]}} --variants {{$node[\"Batch settings\"].json[\"variants\"]}} --parallel {{$node[\"Batch settings\"].json[\"parallel\"]}} --upload --cleanup 2>/workspace/data/last_run.log | tail -1'"
-      },
-      "id": "a4",
-      "name": "Make videos",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [
-        860,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const lines = $input.first().json.stdout.trim().split(/\\r?\\n/);\nreturn [{ json: JSON.parse(lines[lines.length - 1]) }];"
-      },
-      "id": "a5",
-      "name": "Batch result",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1080,
-        300
-      ]
     }
   ],
   "connections": {
-    "Start": {
+    "Form": {
       "main": [
         [
           {
-            "node": "Batch settings",
+            "node": "Build command",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Batch settings": {
+    "Build command": {
       "main": [
         [
           {
-            "node": "Analyze new clips",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Analyze new clips": {
-      "main": [
-        [
-          {
-            "node": "Make videos",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Make videos": {
-      "main": [
-        [
-          {
-            "node": "Batch result",
+            "node": "Start pipeline",
             "type": "main",
             "index": 0
           }
@@ -129,5 +134,6 @@
       ]
     }
   },
-  "settings": {}
+  "settings": {},
+  "active": true
 }

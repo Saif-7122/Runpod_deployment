@@ -1,0 +1,38 @@
+# Fully local run on a small GPU (RTX 3050 4 GB): no Claude, no Sarvam, no RunPod.
+# Use:  set CE_PROFILE=pc   (PowerShell: $env:CE_PROFILE="pc")
+llm_provider: local
+local_models:
+  llm: "Qwen/Qwen3-4B"          # Apache 2.0. The pod profile uses a 14B model.
+  llm_backend: llama_cpp        # GGUF via llama.cpp: fast on a 4 GB GPU, JSON-constrained output
+  llm_gguf_repo: "Qwen/Qwen3-4B-GGUF"
+  llm_gguf_file: "Qwen3-4B-Q4_K_M.gguf"
+  llm_ctx: 16384
+  llm_thinking: false
+  llm_max_new_tokens: 6000
+director:
+  candidates_per_call: 3        # smaller model, fewer but complete versions per call
+  words_per_second: 3.1         # measured Chatterbox pace (3.67 w/s raw), after the slower settings below
+judge:
+  max_attempts: 3               # local attempts are free
+  gate:                         # phase-1 thresholds for the small local judge (calibrate with your review)
+    min: {hook: 7, storyboard: 7, content: 7, cta: 7}
+    weights: {hook: 3, storyboard: 2.5, content: 2.5, cta: 2}
+    min_total: 75
+video_judge:
+  drafts: 1                     # one draft per video on the PC
+  use_vlm: false                # Qwen2.5-VL does not fit in 4 GB; attention checks only
+  cuts_per_10s: [2.5, 7.0]
+analysis:
+  vision_provider: claude       # not used: clips are already analysed and cached
+tts:
+  provider: chatterbox
+  gap_seconds: 0.35             # natural breath between sentences
+  chatterbox:
+    exaggeration: 0.45          # calmer, less rushed
+    cfg_weight: 0.3             # lower = slower, more deliberate pacing (Chatterbox guidance)
+rendering:
+  video_codec: "libx264"
+  x264_preset: "faster"
+  parallel_renders: 1
+batch:
+  parallel_videos: 1

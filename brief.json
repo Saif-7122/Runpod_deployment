@@ -1,5 +1,5 @@
 {
-  "project": "OXYGEN FOREST CLIENT",
+  "project": "",
   "campaign_name": "Oxygen Forest - Forest Estates, Kamareddy",
   "product_name": "Oxygen Forest (Pranavayu Vanam) forest estates",
   "facts_source": "https://oxygenforest.io (read 2026-10-23). Use ONLY these facts; never invent numbers.",
@@ -47,5 +47,10 @@
     "max_scene_duration_seconds": 3.5,
     "min_scene_duration_seconds": 1.5,
     "visual_hook_window_seconds": 2.5
-  }
+  },
+  "languages": [
+    "en",
+    "te",
+    "hi"
+  ]
 }

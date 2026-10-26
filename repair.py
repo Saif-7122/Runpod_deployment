@@ -9,7 +9,8 @@ from judge import native, segment_index, words
 
 def repair(cfg, plan, catalog, segs_pool):
     d = cfg["director"]
-    wps, max_scene = d["words_per_second"], d["max_scene_seconds"]
+    from director import wps_for
+    wps, max_scene = wps_for(cfg, plan), d["max_scene_seconds"]
     idx = segment_index(catalog)
     pool = [s for s in segs_pool if not s.get("native_audio")]
     used, fixes = set(), []

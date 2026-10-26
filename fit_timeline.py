@@ -58,6 +58,7 @@ def fit(cfg, script, audio_meta, catalog, run_dir):
 
     timeline = {
         "run_id": Path(run_dir).name, "video_title": script.get("video_title", ""),
+        "language": script.get("language", "en"),
         "angle": script.get("angle", ""), "project": script.get("project"),
         "total_duration_seconds": round(t, 3), "voiceover_audio": "voiceover.wav",
         "voiceover": voice, "timeline": scenes, "missing_shots": script.get("missing_shots", []),
@@ -127,7 +128,11 @@ def headline_text(text, c):
 
 
 def write_captions(cfg, timeline, sents, path):
-    c = cfg["captions"]
+    import copy
+    c = copy.deepcopy(cfg["captions"])
+    lang_over = (c.get("languages") or {}).get(timeline.get("language", "en"), {})
+    for part in ("caption", "headline"):                 # e.g. Telugu -> Noto Sans Telugu
+        c[part].update(lang_over.get(part, {}))
     pal, cap, hd, ec = c["palette"], c["caption"], c["headline"], c["end_card"]
     W, H = 1080, 1920
     side = int(W * c["safe_zone"]["sides"])

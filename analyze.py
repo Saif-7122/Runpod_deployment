@@ -49,8 +49,14 @@ def collect_sources(cfg, args):
                 })
         return items
     import drive
-    folder = args.folder or cfg["drive"]["raw_folder_id"]
-    return drive.list_videos(folder)
+    folders = [args.folder] if args.folder else (cfg["drive"].get("raw_folder_ids") or [cfg["drive"]["raw_folder_id"]])
+    items, seen = [], set()
+    for folder in folders:                       # every footage folder (old library + new client shoot)
+        for it in drive.list_videos(folder):
+            if it["id"] not in seen:
+                seen.add(it["id"])
+                items.append(it)
+    return items
 
 
 def fetch_clip(cfg, item):
@@ -379,6 +385,7 @@ For EVERY candidate segment return an entry. Return JSON:
       "description": "<one line, concrete: what is visible and what happens, e.g. 'drone rises over villa rooftops; pool visible from 8 s'>",
       "shot_type": "<aerial | exterior | interior | amenity | landscape | road_access | lifestyle | plot | construction | other>",
       "camera_move": "<static | push_in | pull_out | pan | tilt | orbit | rise | descend | tracking | handheld>",
+      "shot_scale": "<wide | medium | close>",
       "tags": ["<3-6 short tags: subjects, time of day, mood>"],
       "best_in": <seconds, start of the strongest part, inside the segment>,
       "best_out": <seconds, end of the strongest part, inside the segment>,
@@ -506,7 +513,8 @@ def analyze_clip(cfg, item, use_vision=True):
             "in": round(b_in, 2), "out": round(b_out, 2), "usable_s": round(b_out - b_in, 2),
             "ad_score": int(v.get("ad_score", 6 if not use_vision else 0)),
             "description": v.get("description", ""), "shot_type": v.get("shot_type", "other"),
-            "camera_move": v.get("camera_move", "static"), "tags": v.get("tags", []),
+            "camera_move": v.get("camera_move", "static"), "shot_scale": v.get("shot_scale", ""),
+            "tags": v.get("tags", []),
             "hero_second": round(min(max(hero, b_in), b_out), 2),
             "subject_x": min(max(float(v["subject_x"] if v.get("subject_x") is not None else 0.5), 0.0), 1.0),
             "problems": v.get("problems", []),

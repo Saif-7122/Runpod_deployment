@@ -65,3 +65,31 @@ voice:
 look:
   feel: "calm, premium, natural light, unhurried but not slow"
   cut_length_seconds: [1.5, 3.5]
+
+editing_rules:                  # how a senior Reels editor cuts this style (director plans with these; judge scores them)
+  hook:
+    - "Open on the single most striking moving shot; no logo, no slow fade-in, no black frame."
+    - "Voice starts within 0.3 s; the hook overlay is on screen from the first frame."
+    - "First cut lands by 2.0-2.5 s."
+  pacing_curve:
+    - "Fast start: cuts of 1.5-2.5 s through hook and context."
+    - "Breathe in the middle: hero / beauty shots may hold 2.5-3.5 s while the main benefit is spoken."
+    - "Quicken again into proof, then end calm: the CTA plays over one wide, beautiful, stable shot."
+    - "No cut ever longer than 3.5 s; no shot shorter than 1.2 s."
+  shot_order:
+    - "Progress wide -> medium -> close inside a beat (place, then people, then detail)."
+    - "Never two shots of the same scale and subject back to back; never two segments of the same clip back to back."
+    - "Cut on movement: leave a shot while something moves; match direction (a left pan into a left walk)."
+    - "When a line names something (pond, sapling, calf, gate), that thing is on screen while it is said."
+    - "Payoff lines go on faces and emotion (smiles, family, an elder on the swing); 'managed' lines on hands at work."
+    - "Keep light consistent within a beat (do not jump from harsh noon to golden hour mid-line)."
+  text:
+    - "One idea per overlay, 2-5 words, sentence case, on screen at least 1.2 s; never over a face."
+    - "Spoken captions: max 4 words on screen, current word highlighted."
+  transitions:
+    - "Hard cuts by default. A short dissolve only for time passing (day -> evening)."
+    - "No flashy wipes, zooms or spins."
+  audio:
+    - "0.3 s breath between sentences; voice loudness about -14 LUFS; no music in this phase."
+  end:
+    - "No new information in the last 3 s: brand end card + one CTA."

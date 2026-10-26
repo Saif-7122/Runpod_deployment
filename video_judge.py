@@ -1,7 +1,7 @@
 """Video judge: scores a quick DRAFT render before the final render is spent. Free (local GPU / CPU).
 
 Attention checks (code): motion in the first 2 s, speech start, dead/frozen frames, cut rhythm, loudness, length.
-Viewer check (local Qwen2.5-VL): looks at 1 fps frames + transcript, scores hook and line-to-footage match.
+Viewer check (Claude Haiku, or local Qwen2.5-VL): looks at 1 fps frames + transcript, scores hook and line-to-footage match.
 Pass = every attention check passes AND the viewer scores meet config video_judge.min.
 Thresholds are starting points; tune them with real Meta results (hook rate, ThruPlay, CTR, cost per lead).
 """
@@ -79,7 +79,7 @@ You also think like a senior performance-ad editor. Judge this Reel draft honest
 
 def viewer_score(cfg, run, video):
     tl = read_json(run / "timeline.json")
-    frames = _frames(cfg, video, 1, 448, run / "judge_frames_1fps")[:40]
+    frames = _frames(cfg, video, 1, 360, run / "judge_frames_1fps")[:40]
     said = " | ".join(f"{v['start']:.0f}s: {v['text']}" for v in tl["voiceover"])
     prompt = f"""Frames above are 1 per second of a {tl['total_duration_seconds']:.0f} s Reel draft. Voiceover with start times:
 {said}
@@ -89,8 +89,15 @@ Score 0-10:
 - match: does what you see match what is being said, line by line?
 - overall: would you watch to the end and consider tapping the CTA?
 Return JSON: {{"hook": <0-10>, "match": <0-10>, "overall": <0-10>, "weakest_moment_s": <int>, "note": "<one line>"}}"""
-    from local_models import vlm_json
-    return vlm_json(cfg, VIEWER_SYSTEM, [(f"t={i}s", f) for i, f in enumerate(frames)], prompt, max_new_tokens=400)
+    if cfg["video_judge"].get("viewer", "claude") == "local":
+        from local_models import vlm_json
+        return vlm_json(cfg, VIEWER_SYSTEM, [(f"t={i}s", f) for i, f in enumerate(frames)], prompt, max_new_tokens=400)
+    from common import ask_claude_json, image_block            # Claude Haiku: ~38 small frames, about $0.001
+    content = []
+    for i, f in enumerate(frames):
+        content += [{"type": "text", "text": f"t={i}s"}, image_block(Path(f).read_bytes())]
+    content.append({"type": "text", "text": prompt})
+    return ask_claude_json(cfg, "judge_model", VIEWER_SYSTEM, content)
 
 
 def judge_video(cfg, run, video):

@@ -24,6 +24,54 @@ def words(text):
     return len(re.findall(r"[\w'’-]+", text or ""))
 
 
+_UNITS = {w: i for i, w in enumerate("zero one two three four five six seven eight nine ten eleven twelve thirteen "
+                                    "fourteen fifteen sixteen seventeen eighteen nineteen".split())}
+_TENS = {w: 10 * i for i, w in enumerate("_ _ twenty thirty forty fifty sixty seventy eighty ninety".split()) if w != "_"}
+_SCALES = {"hundred": 100, "thousand": 1000, "lakh": 100000, "lakhs": 100000, "crore": 10000000, "crores": 10000000}
+
+
+def numbers_in(text):
+    """All numbers in a text, written as digits ('2,057', '450+') or as words ('four hundred and fifty')."""
+    t = (text or "").lower().replace("-", " ")
+    nums = set()
+    for x, scale in re.findall(r"(\d[\d,]*(?:\.\d+)?)\s*(thousand|lakhs?|crores?)?", t):
+        nums.add(float(x.replace(",", "")) * {"thousand": 1000, "lakh": 100000, "lakhs": 100000,
+                                               "crore": 10000000, "crores": 10000000}.get(scale, 1))
+    t = re.sub(r"\d[\d,]*(?:\.\d+)?\s*(?:thousand|lakhs?|crores?)?", " ", t)
+    total = cur = None
+    for w in re.findall(r"[a-z]+", t) + ["."]:
+        if w in _UNITS or w in _TENS:
+            cur = (cur or 0) + _UNITS.get(w, _TENS.get(w, 0))
+        elif w in _SCALES and (cur is not None or total is not None):
+            if _SCALES[w] == 100:
+                cur = (cur or 1) * 100
+            else:
+                total = (total or 0) + (cur or 1) * _SCALES[w]
+                cur = None
+        elif w == "and" and (cur is not None or total is not None):
+            continue
+        else:
+            if cur is not None or total is not None:
+                nums.add(float((total or 0) + (cur or 0)))
+            total = cur = None
+    return nums
+
+
+def unsupported_numbers(script, brief):
+    """Numbers in the script that do not appear anywhere in the brief's facts (0, 1, 2 are always allowed)."""
+    allowed = set()
+    for v in list((brief.get("facts") or {}).values()) + brief.get("key_value_propositions", []) + \
+            brief.get("taglines_from_site", []) + [brief.get("call_to_action", "")]:
+        allowed |= numbers_in(str(v))
+    allowed |= {n * k for n in list(allowed) for k in (100000,) if n < 1000}   # "70 lakhs" = 7,000,000
+    bad = []
+    for s in script.get("sentences", []):
+        for n in numbers_in(s["text"] + " " + s.get("overlay", "")):
+            if n > 2 and n not in allowed:
+                bad.append(f"{s['id']}: number {n:g} is not in the brief's facts")
+    return bad
+
+
 def segment_index(catalog):
     idx = {}
     for c in catalog.get("clips", {}).values():
@@ -38,14 +86,18 @@ def native(s):
 
 
 def spoken_seconds(cfg, script, segs):
-    wps = cfg["director"]["words_per_second"]
+    from director import wps_for
+    wps = wps_for(cfg, script)
     return sum(segs.get(s["segment_ids"][0], {}).get("usable_s", 0) if native(s) and s.get("segment_ids")
                else words(s["text"]) / wps for s in script.get("sentences", []))
 
 
-def rule_checks(cfg, script, catalog, style=None):
+def rule_checks(cfg, script, catalog, style=None, brief=None):
+    from director import wps_for
     d, v = cfg["director"], []
-    wps, max_scene = d["words_per_second"], d["max_scene_seconds"]
+    if brief:
+        v += unsupported_numbers(script, brief)
+    wps, max_scene = wps_for(cfg, script), d["max_scene_seconds"]
     sents = script.get("sentences", [])
     segs = segment_index(catalog)
     if not sents:
@@ -143,7 +195,7 @@ Reply with JSON only."""
 
 DIMENSIONS = {
     "hook": "First 1-3 s: would a scrolling viewer in the target audience stop? Motion-led shot + a line about their life or a vivid image. Specific beats generic.",
-    "storyboard": "Every line's footage visibly shows what is said; beats flow hook > context > main > proof > payoff > cta; visual variety from cut to cut (subject, framing, distance); pacing suits 30-40 s.",
+    "storyboard": "Every line's footage visibly shows what is said; beats flow hook > context > main > proof > payoff > cta; follows the style editing_rules (hook opens on motion, pacing curve fast-breathe-calm, wide>medium>close, the named thing is on screen when said, payoff on faces, calm wide CTA); pacing suits 30-40 s.",
     "content": "One clear core idea; answers the audience's real objection; conversational, natural spoken English (not ad-speak, not a news reader); specific facts.",
     "cta": "One clear, low-friction next step that fits a lead ad; motivated by what came before.",
 }
@@ -233,7 +285,11 @@ def rank_candidates(cfg, brief, plans, catalog, style):
                                 "footage": [segs.get(x, {}).get("description", "?")[:90] for x in s.get("segment_ids", [])],
                                 **({"own_audio": True} if native(s) else {})} for s in p["sentences"]]})
     dims = "\n".join(f"- {k}: {v}" for k, v in DIMENSIONS.items())
-    content = f"""FACTS ALLOWED (anything else is unsupported)
+    lang = plans[0].get("language", "en") if plans else "en"
+    lang_name = {"te": "Telugu", "hi": "Hindi"}.get(lang)
+    content = f"""LANGUAGE OF THE SCRIPTS: {f"{lang_name} - also judge how natural and conversational the {lang_name} sounds" if lang_name else "English"}
+
+FACTS ALLOWED (anything else is unsupported)
 {json.dumps(brief.get('facts', {}), ensure_ascii=False)}
 CTA: {brief.get('call_to_action')}
 
@@ -244,9 +300,19 @@ Score EVERY candidate 0-10 on:
 {dims}
 Return JSON: {{"results": [{{"candidate": <int>, "scores": {{"hook": 0, "storyboard": 0, "content": 0, "cta": 0}},
   "unsupported_claims": ["..."], "fixes": ["s03: ..."]}}]}}"""
+    score = {"type": "integer", "minimum": 0, "maximum": 10}
+    schema = {"type": "object", "required": ["results"], "properties": {"results": {
+        "type": "array", "minItems": len(plans), "maxItems": len(plans), "items": {
+            "type": "object", "required": ["candidate", "scores", "unsupported_claims", "fixes"],
+            "properties": {
+                "candidate": {"type": "integer", "minimum": 0, "maximum": len(plans) - 1},
+                "scores": {"type": "object", "required": list(DIMENSIONS),
+                           "properties": {k: score for k in DIMENSIONS}},
+                "unsupported_claims": {"type": "array", "items": {"type": "string"}},
+                "fixes": {"type": "array", "maxItems": 4, "items": {"type": "string"}}}}}}}
     data = ask_claude_json(cfg, "judge_model",
                            JUDGE_SYSTEM.format(style=yaml.safe_dump(style, allow_unicode=True, sort_keys=False),
-                                               rubric=rubric_text()), content)
+                                               rubric=rubric_text()), content, schema=schema)
     by = {r.get("candidate"): r for r in data.get("results", [])}
     for k, p in enumerate(plans):
         r = by.get(k, {})

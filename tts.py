@@ -16,6 +16,7 @@ from pathlib import Path
 import requests
 
 from common import ffmpeg_bin, load_config, log, read_json, write_json
+from speakable import speakable
 
 SAMPLE_RATE = 44100
 
@@ -25,8 +26,15 @@ def wav_duration(path):
         return w.getnframes() / float(w.getframerate())
 
 
-def sarvam_request(cfg, text):
-    t = cfg["tts"]
+def voice_for(cfg, language):
+    """Per-language Sarvam settings: tts.languages.<en|te> overrides the defaults."""
+    t = dict(cfg["tts"])
+    t.update((t.get("languages") or {}).get(language or "en", {}))
+    return t
+
+
+def sarvam_request(cfg, text, language="en"):
+    t = voice_for(cfg, language)
     key = os.environ.get("SARVAM_API_KEY")
     if not key:
         raise RuntimeError("SARVAM_API_KEY is not set (put it in .env), or run with --mock.")
@@ -68,13 +76,19 @@ def edge_request(cfg, text, dst_mp3):
     raise RuntimeError(f"edge-tts failed after retries: {last}")
 
 
-def trim_and_normalise(cfg, src, dst):
-    """Trim leading/trailing silence only (keeps natural pauses inside the sentence)."""
-    th = cfg["tts"].get("silence_db", -45)
+def trim_and_normalise(cfg, src, dst, language="en"):
+    """Trim leading/trailing silence only (keeps natural pauses), plus the configured pitch shift."""
+    t = voice_for(cfg, language)
+    th = t.get("silence_db", -45)
     af = (f"silenceremove=start_periods=1:start_threshold={th}dB:start_silence=0.05,"
           f"areverse,silenceremove=start_periods=1:start_threshold={th}dB:start_silence=0.08,areverse")
+    semis = float(t.get("pitch_semitones", 0) or 0)
+    if abs(semis) > 0.01:                       # pitch up/down without changing speed
+        r = 2 ** (semis / 12)
+        af += f",asetrate={SAMPLE_RATE}*{r:.5f},aresample={SAMPLE_RATE},atempo={1 / r:.5f}"
     subprocess.run([ffmpeg_bin(cfg), "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
-                    "-af", af, "-ar", str(SAMPLE_RATE), "-ac", "1", "-c:a", "pcm_s16le", str(dst)], check=True)
+                    "-af", f"aresample={SAMPLE_RATE}," + af, "-ar", str(SAMPLE_RATE), "-ac", "1",
+                    "-c:a", "pcm_s16le", str(dst)], check=True)
 
 
 def mock_audio(cfg, text, dst):
@@ -118,6 +132,9 @@ def synthesize(cfg, script, run_dir, mock=False, catalog=None):
 
     def one(s):
         out = adir / f"{s['id']}.wav"
+        lang = script.get("language", "en")
+        if lang == "en":
+            s = {**s, "text": speakable(s["text"])}      # digits/rupee/phone -> words the voice reads naturally
         if s.get("caption_style") == "native":
             clip, seg = native_by_id[s["segment_ids"][0]]
             native_audio(cfg, clip, seg, out)
@@ -136,8 +153,8 @@ def synthesize(cfg, script, run_dir, mock=False, catalog=None):
             raw.unlink(missing_ok=True)
         else:
             raw = adir / f"{s['id']}_raw.wav"
-            raw.write_bytes(sarvam_request(cfg, s["text"]))
-            trim_and_normalise(cfg, raw, out)
+            raw.write_bytes(sarvam_request(cfg, s["text"], lang))
+            trim_and_normalise(cfg, raw, out, lang)
             raw.unlink(missing_ok=True)
         return {"id": s["id"], "path": str(out), "duration": round(wav_duration(out), 3),
                 "native": s.get("caption_style") == "native"}
@@ -145,6 +162,25 @@ def synthesize(cfg, script, run_dir, mock=False, catalog=None):
     workers = 1 if cfg["tts"].get("provider") != "sarvam" else cfg["tts"].get("parallel_requests", 4)
     with ThreadPoolExecutor(max_workers=workers) as pool:
         parts = list(pool.map(one, script["sentences"]))
+
+    # gentle tempo correction so the finished voiceover lands inside the target length
+    lo, hi = (script.get("duration_range") or [0, 10 ** 6])
+    gap0 = cfg["tts"].get("gap_seconds", 0.15) * max(0, len(parts) - 1)
+    total0 = sum(p["duration"] for p in parts if not p.get("native")) + gap0 + \
+        sum(p["duration"] for p in parts if p.get("native"))
+    target = lo + 1.0 if total0 < lo + 1.0 else (hi - 2.0 if total0 > hi - 2.0 else None)
+    if target:
+        f = max(0.88, min(1.08, total0 / target))          # atempo < 1 slows, > 1 speeds up
+        if abs(f - 1) > 0.01:
+            for p in parts:
+                if p.get("native"):
+                    continue
+                tmp = Path(p["path"]).with_suffix(".tmp.wav")
+                subprocess.run([ffmpeg_bin(cfg), "-hide_banner", "-loglevel", "error", "-y", "-i", p["path"],
+                                "-af", f"atempo={f:.3f}", "-c:a", "pcm_s16le", str(tmp)], check=True)
+                os.replace(tmp, p["path"])
+                p["duration"] = round(wav_duration(p["path"]), 3)
+            log("tts", f"tempo x{f:.2f} to fit {lo}-{hi} s (was {total0:.1f} s)")
 
     # join with a short breath between sentences
     gap = cfg["tts"].get("gap_seconds", 0.15)

@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 
 from common import BudgetExceeded, load_config, log, new_run_id, read_json, usage_cost, usage_snapshot, write_json
-from director import generate_candidates, load_style, plan_angles
+from director import generate_candidates, load_style, plan_angles, polish
 from fit_timeline import fit
 from judge import rank_candidates, rule_checks
 from repair import repair
@@ -43,16 +43,17 @@ class Batch:
             if self.out_folder is None:
                 import drive
                 root = self.cfg["drive"]["output_folder_id"]
-                self.out_folder = drive.ensure_folder(root, datetime.now().strftime("%Y-%m-%d"))
+                self.out_folder = (drive.ensure_folder(root, datetime.now().strftime("%Y-%m-%d"))
+                                   if self.cfg["drive"].get("dated_subfolder", False) else root)
             return self.out_folder
 
-    def make_video(self, brief, angle, n):
+    def make_video(self, brief, angle, n, language="en"):
         cfg, a = self.cfg, self.args
         style = self.style
-        run_id = new_run_id(f"{style['name']}-{n:02d}")
+        run_id = new_run_id(f"{style['name']}-{language}-{n:02d}")
         run = cfg["_paths"]["runs"] / run_id
         run.mkdir(parents=True)
-        status = {"run_id": run_id, "variant": n, "style": style["name"], "angle": angle.get("angle"),
+        status = {"run_id": run_id, "variant": n, "style": style["name"], "language": language, "angle": angle.get("angle"),
                   "status": "started", "timings": {}}
         write_json(run / "brief.json", brief)
 
@@ -70,11 +71,11 @@ class Batch:
                 with self.lock:
                     avoid = list(self.hooks)
                 (cands, segs) = step(f"director_{attempt}", lambda: generate_candidates(
-                    cfg, brief, self.catalog, style, angle, avoid_hooks=avoid, feedback=feedback))
+                    cfg, brief, self.catalog, style, angle, avoid_hooks=avoid, feedback=feedback, language=language))
                 ok = []
                 for k, c in enumerate(cands):
                     repair(cfg, c, self.catalog, segs)               # free fixes before any paid review
-                    c["rule_violations"] = rule_checks(cfg, c, self.catalog, style)
+                    c["rule_violations"] = rule_checks(cfg, c, self.catalog, style, brief)
                     if not c["rule_violations"]:
                         ok.append(c)
                 log("run", f"{run_id}: attempt {attempt}: {len(ok)}/{len(cands)} candidates pass the rules")
@@ -99,6 +100,19 @@ class Batch:
             with self.lock:
                 self.hooks.append(passed[0]["sentences"][0]["text"])
             top = passed[: cfg["video_judge"].get("drafts", 2)]
+            if cfg["director"].get("polish", cfg.get("llm_provider") == "local"):
+                for i, c in enumerate(top):                  # free voice polish; kept only if it still passes the rules
+                    try:
+                        pc = step(f"polish{i + 1}", lambda: polish(cfg, c))
+                        issues = rule_checks(cfg, pc, self.catalog, style, brief)
+                        if not issues:
+                            pc["verdict"] = c["verdict"]
+                            top[i] = pc
+                            log("run", f"{run_id}: polished version {i + 1}")
+                        else:
+                            log("run", f"{run_id}: polish rejected ({issues[0]}); keeping original")
+                    except Exception as e:
+                        log("run", f"{run_id}: polish skipped ({e})")
             for i, c in enumerate(top):
                 write_json(run / f"plan_{i + 1}.json", c)
             status.update(status="planned", score=top[0]["verdict"]["score"])
@@ -119,8 +133,9 @@ class Batch:
                 vj = step(f"video_judge{i + 1}", lambda: judge_video(cfg, d, dv))
                 c["video_verdict"] = vj
                 log("run", f"{run_id}: draft {i + 1} video score {vj['score']} {'PASS' if vj['passed'] else vj['fails']}")
-                if vj["passed"] and (best is None or vj["score"] > best[1]["video_verdict"]["score"]):
+                if vj["passed"]:
                     best = (d, c)
+                    break                                # first passing draft wins: saves voice + render cost
             if best is None:
                 status.update(status="needs_human", feedback=[f for c in top for f in c["video_verdict"]["fails"]])
                 write_json(run / "status.json", status)
@@ -206,6 +221,7 @@ def main():
     ap.add_argument("--mock-tts", action="store_true", help="skip Sarvam; quiet placeholder audio")
     ap.add_argument("--cleanup", action="store_true", help="delete per-sentence WAVs after upload")
     ap.add_argument("--style", help="style pack in styles/ (default: director.default_style)")
+    ap.add_argument("--languages", nargs="+", choices=["en", "te", "hi"], help="video languages, alternated (default: brief.languages)")
     ap.add_argument("--plan-only", action="store_true", help="plan + gate only; no voice, render or upload")
     ap.add_argument("--produce", nargs="+", help="run folders whose plan already passed: voice + render + upload")
     ap.add_argument("--config")
@@ -232,13 +248,14 @@ def main():
     for bpath in args.brief:
         brief = read_json(bpath)
         angles = plan_angles(cfg, brief, args.variants, batch.style)
-        log("run", f"{bpath}: {len(angles)} angles planned")
-        jobs += [(brief, ang, i + 1) for i, ang in enumerate(angles)]
+        langs = args.languages or brief.get("languages") or ["en"]
+        log("run", f"{bpath}: {len(angles)} videos planned, languages {langs}")
+        jobs += [(brief, ang, i + 1, langs[i % len(langs)]) for i, ang in enumerate(angles)]
 
     t0 = time.time()
     results = []
     with ThreadPoolExecutor(max_workers=args.parallel or cfg["batch"]["parallel_videos"]) as pool:
-        futs = [pool.submit(batch.make_video, b, ang, n) for b, ang, n in jobs]
+        futs = [pool.submit(batch.make_video, b, ang, n, lang) for b, ang, n, lang in jobs]
         for f in as_completed(futs):
             results.append(f.result())
     wall = time.time() - t0

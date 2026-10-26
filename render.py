@@ -65,8 +65,11 @@ def build_command(cfg, timeline, run_dir, out_path, draft=False):
             cmd += ["-hwaccel", "cuda"]
         cmd += ["-ss", f"{sc['source_in']:.3f}", "-t", f"{take:.3f}", "-i", str(src)]
         fx = min(max(float(sc.get("crop_focus_x", 0.5)), 0.0), 1.0)
+        # shot shorter than its line: gentle slow motion (max 1.5x) instead of a frozen last frame
+        stretch = min(1.5, sc["duration"] / max(0.1, sc["duration"] - sc["hold_seconds"])) if sc["hold_seconds"] > 0.05 else 1.0
+        slow = f"setpts={stretch:.3f}*PTS," if stretch > 1.0 else ""
         chains.append(
-            f"[{i}:v]scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,"
+            f"[{i}:v]{slow}scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,"
             f"crop={W}:{H}:(iw-{W})*{fx:.3f}:(ih-{H})/2,setsar=1,fps={fps},"
             f"{'unsharp=5:5:0.45:5:5:0,' if rc.get('sharpen', True) else ''}format=yuv420p,"
             f"tpad=stop_mode=clone:stop_duration={sc['hold_seconds'] + 0.5:.3f},"
