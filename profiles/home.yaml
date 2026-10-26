@@ -1,0 +1,10 @@
+# Production on the office PC (RTX 5060 Ti 16 GB, i9-12900K, 32 GB RAM) instead of a RunPod 4090.
+# Same Claude + Sarvam pipeline as config.yaml; only the hardware settings change.
+# Set by make_videos.ps1 / start_form.ps1 (CE_PROFILE=home).
+rendering:
+  video_codec: "h264_nvenc"     # the 5060 Ti has one NVENC engine (the 4090 has two)
+  hw_decode: true               # CUDA decode of the 4K/2.7K originals
+  parallel_renders: 3           # concurrent encodes sharing the one NVENC engine
+  threads: 6                    # 24 CPU threads / 3 renders, leaves room for analysis + uploads
+batch:
+  parallel_videos: 8            # Claude/Sarvam calls overlap with renders

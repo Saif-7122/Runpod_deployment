@@ -1,4 +1,5 @@
 {
+  "id": "ceReelsForm00001",
   "name": "Make Oxygen Forest reels (form)",
   "nodes": [
     {
@@ -85,7 +86,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const f = $input.first().json;\nconst n = Math.max(1, Math.min(200, parseInt(f['How many videos?'] || '10', 10) || 10));\nconst langs = { 'English + Telugu + Hindi': 'en te hi', 'English + Telugu': 'en te', 'English + Hindi': 'en hi', 'English': 'en', 'Telugu': 'te', 'Hindi': 'hi' }[f['Language']] || 'en te hi';\nconst style = { 'Weekend home': 'weekend_home' }[f['Style']] || 'weekend_home';\nconst analyse = f['New clips added to Drive since last time?'] === 'Yes' ? 'yes' : 'no';\nreturn [{ json: { cmd: `bash -lc 'nohup /workspace/make_videos.sh ${n} \"${langs}\" ${style} ${analyse} > /dev/null 2>&1 &'` } }];"
+        "jsCode": "const f = $input.first().json;\nconst n = Math.max(1, Math.min(200, parseInt(f['How many videos?'] || '10', 10) || 10));\nconst langs = { 'English + Telugu + Hindi': 'en te hi', 'English + Telugu': 'en te', 'English + Hindi': 'en hi', 'English': 'en', 'Telugu': 'te', 'Hindi': 'hi' }[f['Language']] || 'en te hi';\nconst style = { 'Weekend home': 'weekend_home' }[f['Style']] || 'weekend_home';\nconst analyse = f['New clips added to Drive since last time?'] === 'Yes' ? 'yes' : 'no';\nconst jobs = $env.CE_JOBS_DIR;   // office PC: n8n runs in Docker, the host's watcher (start_form.ps1) runs the job\nif (jobs) {\n  const fs = require('fs');\n  const id = new Date().toISOString().replace(/[:.]/g, '-');\n  fs.writeFileSync(`${jobs}/${id}.json`, JSON.stringify({ n, langs, style, analyse }));\n  return [{ json: { cmd: `echo queued ${id}` } }];\n}\nreturn [{ json: { cmd: `bash -lc 'nohup /workspace/make_videos.sh ${n} \"${langs}\" ${style} ${analyse} > /dev/null 2>&1 &'` } }];"
       },
       "id": "f2",
       "name": "Build command",

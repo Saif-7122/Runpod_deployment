@@ -19,6 +19,20 @@ in the Drive OUTPUT folder. Target: ~50 videos per hour on one RunPod RTX 4090.
 
 Each batch prints its Claude spend and stops at `batch.max_claude_usd` (config.yaml).
 
+## Admin: office PC (RTX 5060 Ti, Windows) - no pod needed
+
+Tools sit next to the repo folder: `..\ce_env` (Python 3.12 + requirements.txt), `..\tools\ffmpeg-*\bin`
+(BtbN win64 build with NVENC). `ce_env.ps1` finds them and sets `CE_PROFILE=home`
+(`profiles/home.yaml`: NVENC, CUDA decode, 3 parallel renders). Measured: final render 13 s, draft 6 s per 38 s reel.
+
+n8n runs in Docker (container `ce-n8n`, image n8n 1.97.1, port **5680**). The form only writes a job file to
+`workspace\jobs`; the `start_form.ps1` window picks each job up and runs `make_videos.ps1` (one batch at a time).
+
+1. `.env`, `token.json`, `client_secret.json` in the repo folder. Docker Desktop running.
+2. First time only - build the clip catalog: `. .\ce_env.ps1; & $env:CE_PYTHON analyze.py --drive`
+3. Double-click **Start Content Engine.bat** → starts the container, prints the form link, then waits for requests.
+   Command line instead of the form: `.\make_videos.ps1 -N 3 -Langs "en te"`
+
 ## Admin: new pod
 
 1. RunPod: RTX 4090, PyTorch template (CUDA 12.x), 150 GB+ volume, **expose HTTP port 5678**.

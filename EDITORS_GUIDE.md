@@ -2,7 +2,16 @@
 
 You do not need any coding. Everything runs from one web form.
 
-## Every day
+## Every day (office PC)
+
+1. On the office PC, make sure Docker Desktop is open, then double-click **Start Content Engine.bat** in the
+   `Runpod_deployment` folder. Leave the black window open: it is what makes the videos.
+2. It prints the form link (`http://<PC address>:5680/form/oxygen-forest-reels`). Bookmark it; it works from any
+   computer on the office network.
+3. Fill in the form and press **Submit** (same questions as below). Videos appear in the Drive OUTPUT folder.
+4. Something looks wrong? Send the admin `workspace\last_run.log` from that folder.
+
+## Every day (RunPod, if the office PC is not used)
 
 1. **Start the pod** (RunPod → Pods → *Content Engine* → **Start**). Ask the admin if you don't have access.
 2. In the pod, open **Connect → Web Terminal** and paste:

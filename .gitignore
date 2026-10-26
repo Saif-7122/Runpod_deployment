@@ -4,6 +4,7 @@ __pycache__/
 token.json
 client_secret*.json
 service_account*.json
+keys.txt
 workspace/
 data/
 *.mp4
