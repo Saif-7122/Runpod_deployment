@@ -101,12 +101,24 @@ def line_seconds(s, wps):
     return float(s["seconds"]) if s.get("seconds") else words(s["text"]) / wps
 
 
+def brand_words(brief):
+    """Brand / project names the hook must not open with, taken from the brief (not hard-coded)."""
+    names = set()
+    for k in ("project", "product_name"):
+        for part in re.split(r"[()\-,|]", str((brief or {}).get(k) or "")):
+            part = part.strip().lower()
+            if len(part) >= 4 and part not in {"forest estates", "estates", "homes", "villas", "plots"}:
+                names.add(part)
+    return names
+
+
 def rule_checks(cfg, script, catalog, style=None, brief=None):
     from director import wps_for
     d, v = cfg["director"], []
     if brief:
         v += unsupported_numbers(script, brief)
     wps, max_scene = wps_for(cfg, script), d["max_scene_seconds"]
+    min_scene, first_cut_by = d.get("min_scene_seconds", 1.2), d.get("first_cut_by_seconds", 2.5)
     sents = script.get("sentences", [])
     segs = segment_index(catalog)
     if not sents:
@@ -131,10 +143,13 @@ def rule_checks(cfg, script, catalog, style=None, brief=None):
 
     hook = sents[0]
     if not native(hook) and not hook.get("seconds"):
+        first_cut = line_seconds(hook, wps) / max(1, len(hook.get("segment_ids") or []))
+        if first_cut > first_cut_by + 0.2:
+            v.append(f"hook: first cut lands at {first_cut:.1f} s (must be by {first_cut_by} s); give the hook 2 segments")
         if words(hook["text"]) > 12:
             v.append(f"hook too long: {words(hook['text'])} words (max 12)")
         low = (hook["text"] + " " + hook.get("overlay", "")).lower()
-        if any(k in low for k in ("₹", "lakh", "price", "oxygen forest")):
+        if any(k in low for k in ("₹", "lakh", "price", *brand_words(brief))):
             v.append("hook must not lead with price or the brand name (save them for later beats)")
     n_native = sum(1 for s in sents if native(s))
     if n_native > d.get("max_native_per_video", 1):
@@ -164,6 +179,8 @@ def rule_checks(cfg, script, catalog, style=None, brief=None):
         share = line_seconds(s, wps) / len(ids)
         if share > max_scene + 0.3:
             v.append(f"{s['id']}: {share:.1f} s per cut (max {max_scene}); add a segment or shorten the line")
+        if share < min_scene - 0.1:
+            v.append(f"{s['id']}: {share:.1f} s per cut (min {min_scene}); use fewer segments or a longer line")
         if len(s.get("overlay", "").split()) > 5:
             v.append(f"{s['id']}: overlay over 5 words")
         for sid in ids:

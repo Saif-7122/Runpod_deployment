@@ -100,6 +100,8 @@ director:
   words_per_second: 2.6         # Indian English voiceover at pace ~1.1
   words_per_second_by_language: {en: 2.6, te: 2.0, hi: 2.5}   # Telugu words are longer; recalibrate from real voiceovers
   max_scene_seconds: 3.5        # longest single cut
+  min_scene_seconds: 1.2        # shortest single cut (style: "no shot shorter than 1.2 s")
+  first_cut_by_seconds: 2.5     # style hook rule: first cut lands by 2.0-2.5 s
   max_segments_in_prompt: 120
   max_native_per_video: 1       # clips played with their own audio (testimonial / presenter)
 

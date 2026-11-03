@@ -179,8 +179,8 @@ CLIPS WITH THEIR OWN MEANINGFUL AUDIO (play as they are, never under the voiceov
 HARD RULES
 1. Total spoken length {lo}-{hi} s: about {round(lo * wps)}-{round(hi * wps)} voiceover words at {wps} words/s (own-audio clips count their seconds).
 2. Follow the style's beat order: {', '.join(b['beat'] for b in style['structure'])}. Tag every line with its beat.
-3. Hook line: 12 words or fewer, over a high-score shot with motion. No logo, no price in the hook.
-4. Every cut lasts at most {d['max_scene_seconds']} s. A line longer than that when spoken gets 2-3 segments, split evenly.
+3. Hook line: 12 words or fewer, over a high-score shot with motion. No logo, no price, no project or brand name in the hook. The first cut lands by {d.get('first_cut_by_seconds', 2.5)} s (a hook longer than that gets 2 segments).
+4. Every cut lasts {d.get('min_scene_seconds', 1.2)}-{d['max_scene_seconds']} s. A line longer than the maximum when spoken gets 2-3 segments, split evenly; a short line gets one.
 5. Each shot's usable_s >= its share of its line's spoken time. No shot used twice. Consecutive cuts never come from the same clip; vary framing and subject from cut to cut.
 6. overlay = 2-5 word headline that adds meaning (not a copy of the line); "" when the shot should breathe. At most one overlay every other line.
 7. Never use: {', '.join(cfg.get('banned_claims', []))}. No invented numbers, approvals, returns or appreciation promises.
@@ -256,8 +256,8 @@ CLIPS WITH THEIR OWN MEANINGFUL AUDIO (play as they are, never under the voiceov
 HARD RULES
 1. Spoken length {lo}-{hi} s: about {wlo}-{whi} voiceover words at {wps} words/s (own-audio clips count their seconds).
 2. Beat order: {beats}. Tag every line with its beat.
-3. Hook: 12 words or fewer, over a high-score shot with motion; no logo, no price.
-4. Each cut <= {max_scene} s; a line longer than that gets 2-3 shots, split evenly. Each shot's usable_s >= its share.
+3. Hook: 12 words or fewer, over a high-score shot with motion; no logo, no price, no project or brand name. First cut by {first_cut_by} s (give a longer hook 2 shots).
+4. Each cut {min_scene}-{max_scene} s; a line longer than the maximum gets 2-3 shots, split evenly; a short line gets one. Each shot's usable_s >= its share.
 5. No shot used twice in a video; consecutive cuts never from the same clip; vary subject and framing.
 6. overlay: 2-5 word sentence-case headline adding meaning, or "" (at most every other line).
 7. Never: {banned}. No invented numbers, approvals, returns or appreciation promises.
@@ -277,7 +277,8 @@ def batch_system(cfg, brief, style, segs):
         rubric=rubric_text(), brief=json.dumps(brief, indent=1, ensure_ascii=False),
         footage="\n".join(segment_table(segs).splitlines()[1:]), native=native_table(segs),
         lo=lo, hi=hi, wlo=round(lo * wps), whi=round(hi * wps), wps=wps, beats=", ".join(b["beat"] for b in style["structure"]),
-        max_scene=d["max_scene_seconds"], banned=", ".join(cfg.get("banned_claims", [])),
+        max_scene=d["max_scene_seconds"], min_scene=d.get("min_scene_seconds", 1.2),
+        first_cut_by=d.get("first_cut_by_seconds", 2.5), banned=", ".join(cfg.get("banned_claims", [])),
         max_native=d["max_native_per_video"])
 
 
