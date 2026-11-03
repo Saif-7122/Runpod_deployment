@@ -1,0 +1,78 @@
+﻿<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--green:#0d2a1e;--gold:#d8b46a;--cream:#f4efe2}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:var(--W);height:var(--H);background:var(--green);overflow:hidden;font-family:Poppins,sans-serif;color:var(--cream)}
+.ad{position:relative;width:var(--W);height:var(--H);overflow:hidden;background:#0d2a1e}
+.hero{position:absolute;left:0;width:100%;background:url(hero.png) center 40%/cover no-repeat}
+.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0d2a1e 0%,rgba(13,42,30,.5) 14%,rgba(13,42,30,0) 34%,rgba(13,42,30,0) 66%,rgba(13,42,30,.7) 86%,#0d2a1e 100%)}
+.top{position:absolute;left:0;right:0;text-align:center}
+.logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;line-height:.9;color:#fff}
+.tag{letter-spacing:.38em;color:var(--gold);text-transform:uppercase;font-weight:500}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto}
+.head{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;color:#fff}
+.sub{letter-spacing:.2em;text-transform:uppercase;color:var(--cream);opacity:.9}
+.bottom{position:absolute;left:0;right:0;text-align:center}
+.stats{display:flex;justify-content:center}
+.stat{flex:1;text-align:center;border-left:1px solid rgba(216,180,106,.45)}
+.stat:first-child{border-left:0}
+.stat svg{stroke:var(--gold);fill:none;stroke-width:1.6}
+.lbl{letter-spacing:.22em;color:var(--gold);text-transform:uppercase;font-weight:500}
+.val{font-variant-numeric:lining-nums;font-family:'Cormorant Garamond',serif;font-weight:500;color:#fff;line-height:1.05}
+.unit{opacity:.85;letter-spacing:.08em}
+.cta{display:inline-flex;align-items:center;gap:.7em;border:1.5px solid var(--gold);border-radius:999px;background:rgba(13,42,30,.6)}
+.cta b{letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:#fff}
+.cta span{color:var(--gold);font-weight:500}
+/* 9:16 */
+.s916{--W:1080px;--H:1920px}
+.s916 .hero{top:300px;height:1150px}
+.s916 .top{top:120px}.s916 .logo{font-size:150px}.s916 .tag{font-size:23px;margin-top:22px}
+.s916 .rule{width:420px;margin-top:26px}
+.s916 .head{font-size:112px;margin-top:70px;line-height:1}.s916 .sub{font-size:25px;margin-top:20px}
+.s916 .bottom{bottom:130px}.s916 .stats{width:900px;margin:0 auto 70px}
+.s916 .stat{padding:0 10px}.s916 .stat svg{width:54px;height:54px;margin-bottom:14px}
+.s916 .lbl{font-size:19px;margin-bottom:10px}.s916 .val{font-size:46px}.s916 .unit{font-size:20px;margin-top:6px}
+.s916 .cta{padding:26px 54px}.s916 .cta b{font-size:30px}.s916 .cta span{font-size:30px}
+/* 4:5 */
+.s45{--W:1080px;--H:1350px}
+.s45 .hero{top:230px;height:830px}
+.s45 .top{top:70px}.s45 .logo{font-size:104px}.s45 .tag{font-size:19px;margin-top:14px}
+.s45 .rule{width:340px;margin-top:18px}
+.s45 .head{font-size:84px;margin-top:40px;line-height:1}.s45 .sub{font-size:21px;margin-top:12px}
+.s45 .bottom{bottom:64px}.s45 .stats{width:900px;margin:0 auto 38px}
+.s45 .stat svg{width:42px;height:42px;margin-bottom:10px}
+.s45 .lbl{font-size:16px;margin-bottom:6px}.s45 .val{font-size:40px}.s45 .unit{font-size:17px;margin-top:4px}
+.s45 .cta{padding:20px 46px}.s45 .cta b{font-size:26px}.s45 .cta span{font-size:26px}
+/* 1:1 */
+.s11{--W:1080px;--H:1080px}
+.s11 .hero{top:0;height:100%}
+.s11 .hero:before{background:linear-gradient(180deg,#0d2a1e 0%,rgba(13,42,30,.7) 24%,rgba(13,42,30,0) 46%,rgba(13,42,30,.15) 58%,rgba(13,42,30,.92) 82%,#0d2a1e 100%)}
+.s11 .hero{background-position:center 38%}
+.s11 .top{top:52px}.s11 .logo{font-size:92px}.s11 .tag{font-size:17px;margin-top:10px}
+.s11 .rule{width:300px;margin-top:14px}
+.s11 .head{font-size:74px;margin-top:26px;line-height:1}.s11 .sub{font-size:19px;margin-top:10px}
+.s11 .bottom{bottom:44px}.s11 .stats{width:900px;margin:0 auto 28px}
+.s11 .stat svg{width:36px;height:36px;margin-bottom:8px}
+.s11 .lbl{font-size:15px;margin-bottom:4px}.s11 .val{font-size:36px}.s11 .unit{font-size:15px;margin-top:2px}
+.s11 .cta{padding:16px 40px}.s11 .cta b{font-size:23px}.s11 .cta span{font-size:23px}
+</style></head>
+<body class="s916"><div class="ad">
+<div class="hero"></div>
+<div class="top">
+ <div class="logo">elite eighteen</div>
+ <div class="tag">Villa Plots · Yelkaguda</div>
+ <div class="rule"></div>
+ <div class="head">Solitude Living</div>
+ <div class="sub">The Luxury Few Talk About</div>
+</div>
+<div class="bottom">
+ <div class="stats">
+  <div class="stat"><svg viewBox="0 0 48 48"><path d="M6 22 24 8l18 14M10 20v20h28V20M20 40V28h8v12"/></svg><div class="lbl">Plots</div><div class="val">19</div><div class="unit">EXCLUSIVE</div></div>
+  <div class="stat"><svg viewBox="0 0 48 48"><rect x="9" y="9" width="30" height="30"/><path d="M9 17h8M9 25h5M9 33h8M31 39v-6M23 39v-4"/></svg><div class="lbl">Size</div><div class="val">682–1,246</div><div class="unit">SQ. YARDS</div></div>
+  <div class="stat"><svg viewBox="0 0 48 48"><path d="M24 43S9 29 9 19a15 15 0 0 1 30 0c0 10-15 24-15 24z"/><circle cx="24" cy="19" r="5"/></svg><div class="lbl">Location</div><div class="val">Yelkaguda</div><div class="unit">MOINABAD</div></div>
+ </div>
+ <div class="cta"><b>Learn More</b><span>+91 70307 77707</span></div>
+</div>
+</div></body></html>
+

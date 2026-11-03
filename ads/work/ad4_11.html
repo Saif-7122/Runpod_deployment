@@ -1,0 +1,62 @@
+﻿<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--g:#0b2419;--ink:#10281c;--paper:#f3eee3;--mute:#6a766c}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;background:var(--g);overflow:hidden;font-family:Poppins,sans-serif;font-variant-numeric:lining-nums}
+.ad{position:relative;width:1080px;overflow:hidden;background:var(--g)}
+.abs{position:absolute}
+.bg{inset:-60px;background:url(hero.png) center/cover;filter:blur(36px) brightness(.5)}
+.hero{left:0;width:1080px;background:url(hero.png) center/cover no-repeat}
+.logo{right:65px;width:200px}
+.hl{left:65px;font-family:'Cormorant Garamond',serif;font-weight:600;color:#fff;line-height:1;letter-spacing:.005em;text-shadow:0 2px 24px rgba(0,0,0,.35)}
+.sub{left:65px;font-size:25px;letter-spacing:.05em;color:#f1ecdf;font-weight:400;text-shadow:0 1px 14px rgba(0,0,0,.45)}
+.panel{background:var(--paper);border-radius:18px;color:var(--ink);padding:24px 34px 18px;display:flex;flex-direction:column;justify-content:space-between}
+.row{display:flex}
+.f{flex:1;display:flex;align-items:center;gap:14px;padding:0 20px;border-left:1px solid #cfc7b4}
+.f:first-child{border-left:0;padding-left:0}
+.f svg{flex:none;width:40px;height:40px;fill:none;stroke:var(--ink);stroke-width:1.6}
+.f small{display:block;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);font-weight:500;margin-bottom:3px}
+.f b{display:block;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:35px;line-height:1.02;white-space:nowrap}
+.cta{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #d6cfbd;padding-top:14px}
+.ph{display:flex;align-items:center;gap:12px;font-size:29px;font-weight:600;letter-spacing:.02em}
+.ph svg{width:28px;height:28px;fill:none;stroke:var(--ink);stroke-width:2}
+.btn{height:60px;padding:0 40px;border-radius:10px;background:var(--ink);color:#fff;font-size:21px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;display:flex;align-items:center}
+/* 4:5 */
+.s45 .ad{height:1350px}
+.s45 .hero{top:0;height:1350px;background-position:center 30%}
+.s45 .scrim{inset:0;background:linear-gradient(180deg,rgba(8,24,17,.78) 0%,rgba(8,24,17,.35) 20%,rgba(8,24,17,0) 36%,rgba(8,24,17,0) 62%,rgba(8,24,17,.55) 100%)}
+.s45 .logo{top:58px}.s45 .hl{top:196px;font-size:108px}.s45 .sub{top:322px}
+.s45 .panel{left:40px;width:1000px;top:1074px;height:236px}
+/* 1:1 */
+.s11 .ad{height:1080px}
+.s11 .hero{top:0;height:1080px;background-position:center 34%}
+.s11 .scrim{inset:0;background:linear-gradient(180deg,rgba(8,24,17,.8) 0%,rgba(8,24,17,.35) 22%,rgba(8,24,17,0) 36%,rgba(8,24,17,0) 60%,rgba(8,24,17,.5) 100%)}
+.s11 .logo{top:44px;width:170px}.s11 .hl{top:150px;font-size:92px}.s11 .sub{top:254px}
+.s11 .panel{left:40px;width:1000px;top:804px;height:236px}
+/* 9:16  safe y 269-1248 */
+.s916 .ad{height:1920px}
+.s916 .hero{top:330px;height:1100px;background-position:center 40%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 22%,#000 82%,transparent 100%)}
+.s916 .scrim{left:0;width:1080px;top:300px;height:520px;background:linear-gradient(180deg,rgba(8,24,17,0),rgba(8,24,17,.55) 30%,rgba(8,24,17,0))}
+.s916 .bg{filter:blur(36px) brightness(.38)}
+.s916 .scrimB{left:0;width:1080px;top:1180px;height:740px;background:linear-gradient(180deg,rgba(11,36,25,0),var(--g) 35%)}
+.s916 .logo{top:290px}.s916 .hl{top:420px;font-size:112px}.s916 .sub{top:548px}
+.s916 .panel{left:40px;width:1000px;top:1004px;height:236px}
+</style></head>
+<body class="s11"><div class="ad">
+<div class="abs bg"></div>
+<div class="abs hero"></div>
+<div class="abs scrim"></div><div class="abs scrimB"></div>
+<img class="abs logo" src="logo_light.png">
+<div class="abs hl">Only 19 Families.</div>
+<div class="abs sub">Six acres of breathing space.</div>
+<div class="abs panel">
+ <div class="row">
+  <div class="f"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20"/><path d="M16 14h16M16 20h16M16 14c8 0 10 4 6 8-2 2-5 3-8 3l10 11" stroke-linecap="round" stroke-linejoin="round"/></svg><div><small>Starting from</small><b>₹3.5 Cr</b></div></div>
+  <div class="f"><svg viewBox="0 0 48 48"><rect x="8" y="8" width="32" height="32"/><path d="M8 18h7M8 26h4M8 34h7M30 40v-6M22 40v-4"/></svg><div><small>Plot size</small><b>682–1,246 Sq. Yd</b></div></div>
+  <div class="f"><svg viewBox="0 0 48 48"><path d="M24 43S9 29 9 19a15 15 0 0 1 30 0c0 10-15 24-15 24z"/><circle cx="24" cy="19" r="5"/></svg><div><small>Location</small><b>Moinabad</b></div></div>
+ </div>
+ <div class="cta"><div class="ph"><svg viewBox="0 0 24 24"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>+91 79935 44699</div><div class="btn">Learn More</div></div>
+</div>
+</div></body></html>
+

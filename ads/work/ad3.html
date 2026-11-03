@@ -1,0 +1,63 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--g:#0b2419;--gold:#dcb872;--cream:#f4efe2}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;background:var(--g);overflow:hidden;font-family:Poppins,sans-serif;color:var(--cream)}
+.ad{position:relative;width:1080px;overflow:hidden;background:var(--g)}
+.hero{position:absolute;left:0;width:1080px;background:url(hero.png) center/cover no-repeat}
+.hero:after{content:"";position:absolute;inset:0}
+.abs{position:absolute}
+.tag{left:65px;display:flex;align-items:center;gap:12px;font-size:19px;letter-spacing:.16em;text-transform:uppercase;font-weight:500;color:#fff}
+.tag svg{width:24px;height:24px;stroke:var(--gold);fill:none;stroke-width:2}
+.logo{right:65px;width:210px}
+.hl{left:65px;font-family:'Cormorant Garamond',serif;color:#fff;line-height:1.02;font-weight:500;letter-spacing:.003em}
+.hl b{font-weight:700}
+.sub{left:65px;font-size:24px;letter-spacing:.06em;color:var(--cream);font-weight:400}
+.sub i{color:var(--gold);font-style:normal;padding:0 .45em}
+.feat{left:65px;width:950px;display:flex}
+.fc{flex:1;display:flex;align-items:center;gap:14px;padding:0 14px;border-left:1px solid rgba(220,184,114,.5)}
+.fc:first-child{border-left:0;padding-left:0}
+.fc svg{flex:none;width:42px;height:42px;stroke:var(--gold);fill:none;stroke-width:1.6}
+.fc div{font-size:16px;line-height:1.35;letter-spacing:.02em;color:var(--cream)}
+.fc b{display:block;font-size:19px;font-weight:600;color:#fff}
+.bar{left:65px;width:950px;height:84px;border-radius:14px;background:#f4efe2;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 34px;color:var(--g)}
+.bar .ph{font-size:30px;font-weight:600;letter-spacing:.03em;display:flex;align-items:center;gap:14px}
+.bar .ph svg{width:30px;height:30px;stroke:var(--g);fill:none;stroke-width:2}
+.bar .btn{height:60px;padding:0 38px;border-radius:10px;background:var(--g);color:#fff;font-size:23px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;display:flex;align-items:center}
+/* 9:16 safe: y 269-1248 */
+.s916 .ad{height:1920px}
+.s916 .hero{top:330px;height:1100px;background-position:center 40%}
+.s916 .hero:after{background:linear-gradient(180deg,var(--g) 0%,rgba(11,36,25,.75) 14%,rgba(11,36,25,.35) 30%,rgba(11,36,25,0) 46%,rgba(11,36,25,0) 58%,rgba(11,36,25,.88) 72%,var(--g) 100%)}
+.s916 .tag{top:292px}.s916 .logo{top:282px}
+.s916 .hl{top:392px;font-size:108px}.s916 .sub{top:620px}
+.s916 .feat{top:1066px}.s916 .bar{top:1156px}
+/* 4:5 */
+.s45 .ad{height:1350px}
+.s45 .hero{top:0;height:1350px;background-position:center 30%}
+.s45 .hero:after{background:linear-gradient(180deg,rgba(11,36,25,.92) 0%,rgba(11,36,25,.55) 22%,rgba(11,36,25,0) 40%,rgba(11,36,25,0) 56%,rgba(11,36,25,.88) 76%,var(--g) 100%)}
+.s45 .tag{top:70px}.s45 .logo{top:58px}
+.s45 .hl{top:150px;font-size:104px}.s45 .sub{top:372px}
+.s45 .feat{top:1010px}.s45 .bar{top:1130px}
+/* 1:1 */
+.s11 .ad{height:1080px}
+.s11 .hero{top:0;height:1080px;background-position:center 34%}
+.s11 .hero:after{background:linear-gradient(180deg,rgba(11,36,25,.92) 0%,rgba(11,36,25,.5) 24%,rgba(11,36,25,0) 40%,rgba(11,36,25,0) 56%,rgba(11,36,25,.9) 76%,var(--g) 100%)}
+.s11 .tag{top:52px}.s11 .logo{top:42px;width:180px}
+.s11 .hl{top:118px;font-size:88px}.s11 .sub{top:300px}
+.s11 .feat{top:790px}.s11 .bar{top:900px}
+</style></head>
+<body class="FMT"><div class="ad">
+<div class="hero"></div>
+<div class="abs tag"><svg viewBox="0 0 24 24"><path d="M12 22S4 14.5 4 9a8 8 0 0 1 16 0c0 5.500-8 13-8 13z"/><circle cx="12" cy="9" r="3"/></svg>Yelkaguda, Moinabad</div>
+<img class="abs logo" src="logo_light.png">
+<div class="abs hl">Six Acres of<br><b>Breathing Space</b></div>
+<div class="abs sub">Premium Villa Plots<i>|</i>682–1,246 Sq. Yd</div>
+<div class="abs feat">
+ <div class="fc"><svg viewBox="0 0 48 48"><rect x="7" y="7" width="34" height="34"/><path d="M7 24h34M24 7v34"/></svg><div><b>19 Plots</b>Exclusive</div></div>
+ <div class="fc"><svg viewBox="0 0 48 48"><path d="M5 30c4-4 7 4 11 0s7 4 11 0 7 4 11 0 4-3 5-3M14 24V10a4 4 0 0 1 8 0M26 24V10a4 4 0 0 1 8 0M14 16h12"/></svg><div><b>Clubhouse</b>Pool &amp; Pickleball</div></div>
+ <div class="fc"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><path d="M24 13v11l7 5"/></svg><div><b>35 mins</b>Gachibowli</div></div>
+ <div class="fc"><svg viewBox="0 0 48 48"><path d="M42 10 6 22l12 5 5 12 5-8 9 6z"/></svg><div><b>40 mins</b>RG Airport</div></div>
+</div>
+<div class="abs bar"><div class="ph"><svg viewBox="0 0 24 24"><path d="M5 3h4l2 5-2.500 1.500a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>+91 79935 44699</div><div class="btn">Learn More</div></div>
+</div></body></html>
