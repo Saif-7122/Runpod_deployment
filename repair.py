@@ -4,7 +4,7 @@ Fixes: unknown / duplicate shots, cuts longer than max_scene, shots too short fo
 back-to-back cuts from the same clip, invalid own-audio lines, too-long or too many overlays.
 Cannot fix (left to the rule check / judge): wrong length, missing beats, hook leading with price/brand.
 """
-from judge import native, segment_index, words
+from judge import line_seconds, native, segment_index, words
 
 
 def repair(cfg, plan, catalog, segs_pool):
@@ -46,7 +46,7 @@ def repair(cfg, plan, catalog, segs_pool):
                 continue
             clean.append(sid)
         # enough shots so every cut <= max_scene and each shot covers its share
-        dur = max(0.5, words(sent["text"]) / wps)
+        dur = max(0.5, line_seconds(sent, wps))
         while True:
             n = max(1, len(clean))
             share = dur / n

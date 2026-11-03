@@ -1,4 +1,5 @@
 """Turn on-screen text into text a TTS voice reads naturally: '25,000' -> 'twenty-five thousand',
+numbers always in English words, in every language ('Terrace 35' -> 'Terrace thirty-five', '5km' -> 'five km'),
 '₹70 lakhs' -> 'seventy lakhs', '450+' -> 'over four hundred and fifty', '+91 81217 77770' -> digit by digit."""
 import re
 
@@ -32,6 +33,8 @@ def speakable(text):
     t = re.sub(r"PM\s?2\.5", "P M two point five", t)
     t = t.replace("24/7", "twenty-four seven").replace("sq yd", "square yards").replace("sq. yd", "square yards")
     t = re.sub(r"₹\s?", "", t)
+    # a number glued to a unit or a Telugu/Hindi suffix ('5km', '450కి'): keep the number English, then a space
+    t = re.sub(r"(\d)(?=[^\d\s,.+%/])", lambda m: m.group(1) + " ", t)
     t = re.sub(r"(\d[\d,]*)\+", lambda m: "over " + num_words(m.group(1).replace(",", "")), t)
     t = re.sub(r"(\d+)\s?%", lambda m: num_words(m.group(1)) + " percent", t)
     t = re.sub(r"\d[\d,]*", lambda m: num_words(m.group(0).replace(",", "")), t)

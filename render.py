@@ -17,6 +17,9 @@ def resolve_source(cfg, scene):
     hits = [h for h in cfg["_paths"]["clips"].glob(f"{scene['clip_file_id']}.*") if not h.name.endswith(".part")]
     if hits:
         return hits[0], False
+    orig = scene.get("original_path")
+    if orig and Path(orig).exists() and Path(orig).suffix.lower() in (".mp4", ".mov", ".mkv", ".m4v"):
+        return Path(orig), False
     proxy = cfg["_paths"]["proxies"] / f"{scene['clip_file_id']}.mp4"
     if proxy.exists() and not cfg["rendering"].get("prefer_originals", True):
         return proxy, True
@@ -52,15 +55,31 @@ def filter_path(p):
     return str(p).replace("\\", "/").replace(":", "\\:")
 
 
+def logo_enable(timeline, xf):
+    """Show our logo only over shots that don't already carry one (clips the team branded); never twice."""
+    spans, sc = [], timeline["timeline"]
+    for i, s in enumerate(sc):
+        if not s.get("burned_logo"):
+            a = s["start_time"] + (xf / 2 if i else 0)            # wait until the dissolve from a branded shot is over
+            b = s["end_time"] - (xf / 2 if i < len(sc) - 1 else 0)
+            spans.append(f"between(t,{a:.2f},{b:.2f})")
+    if len(spans) == len(sc):
+        return ""
+    return ":enable='" + ("+".join(spans) or "0") + "'"
+
+
 def build_command(cfg, timeline, run_dir, out_path, draft=False):
     rc, cap = cfg["rendering"], cfg["captions"]
     W, H, fps = (540, 960, 24) if draft else (1080, 1920, rc.get("fps", 30))
     total = timeline["total_duration_seconds"]
     cmd = [ffmpeg_bin(cfg), "-hide_banner", "-loglevel", "error", "-y"]
     chains = []
+    n = len(timeline["timeline"])
+    xf = 0.0 if draft else float(rc.get("transition_seconds", 0))   # soft dissolve between shots (0 = hard cuts)
     for i, sc in enumerate(timeline["timeline"]):
         src, _ = resolve_source(cfg, sc)
-        take = max(0.1, sc["duration"] - sc["hold_seconds"]) + 0.15
+        extra = xf if i < n - 1 else xf / 2                 # each shot runs on under the next one's fade-in
+        take = max(0.1, sc["duration"] - sc["hold_seconds"]) + extra + 0.15
         if rc.get("hw_decode"):
             cmd += ["-hwaccel", "cuda"]
         cmd += ["-ss", f"{sc['source_in']:.3f}", "-t", f"{take:.3f}", "-i", str(src)]
@@ -68,20 +87,43 @@ def build_command(cfg, timeline, run_dir, out_path, draft=False):
         # shot shorter than its line: gentle slow motion (max 1.5x) instead of a frozen last frame
         stretch = min(1.5, sc["duration"] / max(0.1, sc["duration"] - sc["hold_seconds"])) if sc["hold_seconds"] > 0.05 else 1.0
         slow = f"setpts={stretch:.3f}*PTS," if stretch > 1.0 else ""
+        # hook shot: slow push-in so the first frame already moves
+        push = (f"zoompan=z='min(1+0.0016*on,1.12)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s={W}x{H}:fps={fps},"
+                if i == 0 and rc.get("hook_push_in") else "")
         chains.append(
             f"[{i}:v]{slow}scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,"
-            f"crop={W}:{H}:(iw-{W})*{fx:.3f}:(ih-{H})/2,setsar=1,fps={fps},"
+            f"crop={W}:{H}:(iw-{W})*{fx:.3f}:(ih-{H})/2,setsar=1,fps={fps},{push}"
             f"{'unsharp=5:5:0.45:5:5:0,' if rc.get('sharpen', True) else ''}format=yuv420p,"
-            f"tpad=stop_mode=clone:stop_duration={sc['hold_seconds'] + 0.5:.3f},"
-            f"trim=duration={sc['duration']:.3f},setpts=PTS-STARTPTS[v{i}]")
-    n = len(timeline["timeline"])
-    concat = "".join(f"[v{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=0[vc]"
+            f"tpad=stop_mode=clone:stop_duration={sc['hold_seconds'] + extra + 0.5:.3f},"
+            f"trim=duration={sc['duration'] + extra:.3f},setpts=PTS-STARTPTS[v{i}]")
+    if xf > 0 and n > 1:
+        links, off, prev = [], 0.0, "[v0]"
+        for i in range(1, n):
+            off += timeline["timeline"][i - 1]["duration"]
+            out = "[vc]" if i == n - 1 else f"[x{i}]"
+            links.append(f"{prev}[v{i}]xfade=transition=fade:duration={xf:.3f}:offset={off - xf / 2:.3f}{out}")
+            prev = out
+        concat = ";".join(links)
+    else:
+        concat = "".join(f"[v{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=0[vc]"
     subs = f"subtitles=captions.ass"
     if cap.get("fonts_dir"):
         fd = Path(cap["fonts_dir"])
         fd = fd if fd.is_absolute() else ROOT / fd
         subs += f":fontsdir='{filter_path(fd)}'"
-    chains += [concat, f"[vc]{subs}[vout]"]
+    grade = f"{rc['grade']}," if rc.get("grade") else ""        # one look across phones / skies
+    logo = cap.get("logo") or {}
+    lp = Path(logo.get("path", ""))
+    lp = lp if lp.is_absolute() else ROOT / lp
+    if logo.get("path") and lp.exists():
+        k = W / 1080
+        cmd += ["-loop", "1", "-i", str(lp)]
+        chains += [concat, f"[vc]{grade}{subs}[vs]",
+                   f"[{n}:v]scale={round(logo['width'] * k)}:-1,format=rgba[lg]",
+                   f"[vs][lg]overlay={round(logo['x'] * k)}:{round(logo['y'] * k)}:shortest=1{logo_enable(timeline, xf)}[vout]"]
+        n += 1
+    else:
+        chains += [concat, f"[vc]{grade}{subs}[vout]"]
 
     vo_idx = n
     cmd += ["-i", str(Path(run_dir) / timeline["voiceover_audio"])]

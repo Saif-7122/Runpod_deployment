@@ -8,7 +8,7 @@ drive:
   raw_folder_ids:                                       # every footage source analysed for the catalog
     - "12sr-Z52Cc50QifU3-3qfDQpXAt4DevNi"               # Footage (full library)
     - "1cn-nlMKwUUdKk8qqd4eHejyLSEcQ6fVF"               # OXYGEN FOREST CLIENT (Oct 2026 shoot)
-  output_folder_id: "1aLI-xTyuZqMG1uDX51Axkhhjz0oVZiFj"         # finished videos + captions are uploaded here
+  output_folder_id: "1KdYODMCEXcg6kNWN8WC2ltpYT-zOxLDO"         # finished videos + captions are uploaded here (old: 1aLI-xTyuZqMG1uDX51Axkhhjz0oVZiFj)
   upload_by_default: false
   dated_subfolder: false        # true = OUTPUT/<date>/...; false = straight into the OUTPUT folder
 
@@ -112,7 +112,23 @@ judge:
     min_total: 78               # weighted score out of 100
 
 tts:
-  provider: "sarvam"            # Sarvam bulbul:v3 only (English + Telugu)
+  provider: "elevenlabs"        # elevenlabs (Oct 2026 organic batch) | sarvam (bulbul:v3, English + Telugu)
+  elevenlabs:                   # one request per script (/with-timestamps) so sentences flow; key in .env ELEVENLABS_API_KEY
+    url: "https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/with-timestamps"
+    model: "eleven_v4"          # Telugu + English; eleven_v4_turbo costs half the credits
+    output_format: "mp3_44100_128"   # 192 kbps needs the Creator tier
+    voice_settings: {stability: 0.45, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true, speed: 1.0}
+    voices:                     # ElevenLabs voice library ids (chosen by the user)
+      professor_bill: "lnieQLGTodpbhjpZtg1k"   # en, calm American male
+      tessa: "kw7MsfzXoT4yQD1Lgo5A"            # en, pleasant American female
+      bunty: "2I56yvR6ubAyIbBlNfn7"            # Indian male explainer (Hindi-native)
+      kalpana: "llsUsrN3CKAHdUcqg2c6"          # Indian-English female creator
+      chaitra: "PnktIx9i1QQBGfm7h7cd"          # te, calm female narrator
+      chaitra_lively: "oyjIr5XAhIyRjfNq6spl"   # te, upbeat female
+      maddy: "byBvnAtc0165IHbm4c7a"            # te, warm male narrator
+      anusha: "t1csE7x0GR94Z0Nvb8oa"           # te, friendly female (user pick, 2026-10-31)
+      en_main: "ack0QsRaQyDLnVyMQTSd"          # en, the user's chosen English voice (2026-10-31)
+    defaults: {en: en_main, te: maddy, hi: bunty}
   url: "https://api.sarvam.ai/text-to-speech"
   model: "bulbul:v3"            # verified 2026-10-23 (v1, v2 retired)
   speaker: "priya"              # bulbul:v3 voices: priya, kavya, ritu, shubh, advait, ... (samples in workspace/voice_samples)
@@ -164,11 +180,61 @@ captions:
       headline: {font: "Poppins SemiBold", size: 76}
   end_card:                     # brand + CTA, last seconds of the CTA line
     brand: "Oxygen Forest"
+    font: "Marcellus"           # brand display face (HOI Brand Guidelines v2.0)
     sub: "Pranavayu Vanam · Kamareddy"
-    contact: "WhatsApp +91 81217 77770"
+    contact: "+91 81217 77770"  # CTA is "contact us right now" (user, 2026-10-30), so show the number
     seconds: 3.0
+  wordmark: {text: "", font: "Fraunces SemiBold", size: 44}   # text mark, top left (off: the logo below is the brand mark)
+  # red Oxygen Forest logo, fixed top right on every frame (1080-wide coordinates). Sits exactly over the logo that is
+  # burned into the site-visit clips, so those never show it twice.
+  headlines: false              # no top heading text when burned captions are on (user, 2026-10-30)
+  logo: {path: "assets/of_logo_red.png", x: 922, y: 70, width: 118,      # smaller (user, 2026-10-30)
+         branded_projects: ["Oxygen Forest Client Site Visits"]}   # these clips already carry the logo
+  # Type themes, picked per reel (plan "theme"). *Stressed words* in a script use the emph font/colour/scale.
+  themes:
+    forest_serif: {caption: {font: "Poppins SemiBold"}, headline: {font: "Fraunces SemiBold", size: 92},
+                   emph: {font: "Fraunces SemiBold Italic", color: "#E4B7A9", scale: 1.3}}
+    bold_anton:   {caption: {font: "Poppins Bold"}, headline: {font: "Anton", size: 112},
+                   emph: {font: "Anton", color: "#F2C14E", scale: 1.4}}
+    bebas_leaf:   {caption: {font: "Poppins SemiBold"}, headline: {font: "Bebas Neue", size: 130},
+                   emph: {font: "Bebas Neue", color: "#A8E063", scale: 1.5}}
+    archivo:      {caption: {font: "Poppins SemiBold"}, headline: {font: "Archivo Black", size: 84},
+                   emph: {font: "Archivo Black", color: "#FF9F43", scale: 1.25}}
+    editorial:    {caption: {font: "Poppins Medium"}, headline: {font: "DM Serif Display", size: 100},
+                   emph: {font: "DM Serif Display", color: "#F6E7C1", scale: 1.4}}
+    elegant:      {caption: {font: "Poppins SemiBold"}, headline: {font: "Marcellus", size: 92},
+                   emph: {font: "Marcellus", color: "#F2C14E", scale: 1.45}}
+    abril:        {caption: {font: "Poppins SemiBold"}, headline: {font: "Abril Fatface", size: 96},
+                   emph: {font: "Abril Fatface", color: "#E4B7A9", scale: 1.35}}
+    # reference-reel look (user's Drive references, 2026-10-30): one calm phrase at mid-frame, no colour highlight,
+    # the stressed word switches to a serif; soft shadow, no heavy outline
+    ref_en:       {phrase: true, caption: {font: "Poppins Medium", size: 74, max_words: 5, max_chars_per_line: 26,
+                                           y_center: 1000, outline: 1, shadow: 4},
+                   emph: {font: "Fraunces SemiBold Italic", color: "#FFFFFF", scale: 1.3}}
+    # House of Investors brand type (Brand Guidelines v2.0): Marcellus display + Instrument Sans text; Telugu:
+    # Noto Serif Telugu display + Noto Sans Telugu text. Colour is free to experiment; fonts are not.
+    hoi_en:       {phrase: true, caption: {font: "Instrument Sans SemiBold", size: 72, max_words: 5, max_chars_per_line: 26,
+                                           y_center: 1000, outline: 1, shadow: 4},
+                   emph: {font: "Marcellus", color: "#E3C98F", scale: 1.32}}
+    hoi_te:       {phrase: true, caption: {font: "Noto Sans Telugu SemiBold", size: 90, max_words: 4, max_chars_per_line: 24,
+                                           y_center: 1000, outline: 1, shadow: 4},
+                   emph: {font: "Noto Serif Telugu Bold", color: "#E3C98F", scale: 1.15}}
+    ref_te:       {phrase: true, caption: {font: "Hind Guntur SemiBold", size: 92, max_words: 4, max_chars_per_line: 24,
+                                           y_center: 1000, outline: 0, shadow: 3},
+                   emph: {font: "Ramabhadra", color: "#FFFFFF", scale: 1.15}}
+    te_ramabhadra: {caption: {font: "Hind Guntur SemiBold", size: 112}, headline: {font: "Ramabhadra", size: 172},
+                    emph: {font: "Ramabhadra", color: "#F2C14E", scale: 1.3}}
+    te_ntr:        {caption: {font: "Hind Guntur SemiBold", size: 112}, headline: {font: "Hind Guntur Bold", size: 160},
+                    emph: {font: "Hind Guntur Bold", color: "#A8E063", scale: 1.35}}
+    te_tiro:       {caption: {font: "Noto Sans Telugu SemiBold", size: 104}, headline: {font: "Ramabhadra", size: 172},
+                    emph: {font: "Ramabhadra", color: "#FF9F43", scale: 1.3}}
+    te_suranna:    {caption: {font: "Hind Guntur SemiBold", size: 112}, headline: {font: "Suranna", size: 172},
+                    emph: {font: "Hind Guntur Bold", color: "#E4B7A9", scale: 1.3}}
 
 rendering:
+  hook_push_in: true            # slow zoom on the first shot
+  transition_seconds: 0.3       # soft dissolve between shots; hard jump cuts felt abrupt (user, 2026-10-30)
+  grade: "eq=contrast=1.06:saturation=1.10:gamma=0.98,colorbalance=rm=0.02:bm=-0.02,noise=alls=3:allf=t"   # one warm look + light grain
   video_codec: "libx264"        # "h264_nvenc" on the RunPod 4090 (setup.sh sets this via CE_CODEC)
   nvenc_preset: "p5"
   cq: 19                        # NVENC quality (lower = better)

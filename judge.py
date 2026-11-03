@@ -21,7 +21,8 @@ from director import load_style, rubric_text
 
 
 def words(text):
-    return len(re.findall(r"[\w'’-]+", text or ""))
+    # space-separated tokens with a letter/digit; a \w regex splits Telugu/Hindi words at every vowel sign
+    return sum(1 for w in (text or "").split() if re.search(r"\w", w))
 
 
 _UNITS = {w: i for i, w in enumerate("zero one two three four five six seven eight nine ten eleven twelve thirteen "
@@ -33,6 +34,9 @@ _SCALES = {"hundred": 100, "thousand": 1000, "lakh": 100000, "lakhs": 100000, "c
 def numbers_in(text):
     """All numbers in a text, written as digits ('2,057', '450+') or as words ('four hundred and fifty')."""
     t = (text or "").lower().replace("-", " ")
+    for local, en in (("లక్షల", "lakhs"), ("లక్షలు", "lakhs"), ("లక్ష", "lakh"), ("కోట్ల", "crores"), ("కోటి", "crore"),
+                      ("लाख", "lakh"), ("करोड़", "crore")):      # Telugu / Hindi scale words
+        t = t.replace(local, " " + en)
     nums = set()
     for x, scale in re.findall(r"(\d[\d,]*(?:\.\d+)?)\s*(thousand|lakhs?|crores?)?", t):
         nums.add(float(x.replace(",", "")) * {"thousand": 1000, "lakh": 100000, "lakhs": 100000,
@@ -89,7 +93,12 @@ def spoken_seconds(cfg, script, segs):
     from director import wps_for
     wps = wps_for(cfg, script)
     return sum(segs.get(s["segment_ids"][0], {}).get("usable_s", 0) if native(s) and s.get("segment_ids")
-               else words(s["text"]) / wps for s in script.get("sentences", []))
+               else line_seconds(s, wps) for s in script.get("sentences", []))
+
+
+def line_seconds(s, wps):
+    """Screen time of a line: spoken length, or the set seconds of a scenic (no-voice) text card."""
+    return float(s["seconds"]) if s.get("seconds") else words(s["text"]) / wps
 
 
 def rule_checks(cfg, script, catalog, style=None, brief=None):
@@ -121,7 +130,7 @@ def rule_checks(cfg, script, catalog, style=None, brief=None):
             v.append(f"beats out of order: {' > '.join(str(b) for b in seen_beats)} (expected {' > '.join(order)})")
 
     hook = sents[0]
-    if not native(hook):
+    if not native(hook) and not hook.get("seconds"):
         if words(hook["text"]) > 12:
             v.append(f"hook too long: {words(hook['text'])} words (max 12)")
         low = (hook["text"] + " " + hook.get("overlay", "")).lower()
@@ -152,7 +161,7 @@ def rule_checks(cfg, script, catalog, style=None, brief=None):
                 seen.add(ids[0])
                 prev = seg
             continue
-        share = words(s["text"]) / wps / len(ids)
+        share = line_seconds(s, wps) / len(ids)
         if share > max_scene + 0.3:
             v.append(f"{s['id']}: {share:.1f} s per cut (max {max_scene}); add a segment or shorten the line")
         if len(s.get("overlay", "").split()) > 5:

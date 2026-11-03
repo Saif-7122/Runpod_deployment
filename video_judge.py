@@ -43,7 +43,7 @@ def _speech_start(wav_path, thresh_db=-35):
     return None
 
 
-def attention_checks(cfg, run, video):
+def attention_checks(cfg, run, video, audio=True):
     vj = cfg["video_judge"]
     tl = read_json(run / "timeline.json")
     frames = _frames(cfg, video, 8, 160, run / "judge_frames")
@@ -59,17 +59,18 @@ def attention_checks(cfg, run, video):
     dead_s = dead / 8
     dur = tl["total_duration_seconds"]
     cuts_per_10s = len(tl["timeline"]) / dur * 10
-    speech = _speech_start(run / tl.get("voiceover_audio", "voiceover.wav"))
-    lufs = _loudness(cfg, video)
     lo, hi = vj["duration_s"]
     checks = {
         "hook_motion": (round(hook_motion, 2), hook_motion >= vj["min_hook_motion"]),
-        "speech_start_s": (speech, speech is not None and speech <= vj["max_speech_start_s"]),
         "longest_dead_s": (round(dead_s, 2), dead_s <= vj["max_dead_s"]),
         "cuts_per_10s": (round(cuts_per_10s, 2), vj["cuts_per_10s"][0] <= cuts_per_10s <= vj["cuts_per_10s"][1]),
-        "loudness_lufs": (lufs, lufs is None or abs(lufs - vj["target_lufs"]) <= 3),
         "duration_s": (round(dur, 1), lo - 1 <= dur <= hi + 2),
     }
+    if audio:              # silent drafts (voice not bought yet) skip the two checks that measure the voice itself
+        speech = _speech_start(run / tl.get("voiceover_audio", "voiceover.wav"))
+        lufs = _loudness(cfg, video)
+        checks["speech_start_s"] = (speech, speech is not None and speech <= vj["max_speech_start_s"])
+        checks["loudness_lufs"] = (lufs, lufs is None or abs(lufs - vj["target_lufs"]) <= 3)
     return checks
 
 
@@ -100,10 +101,10 @@ Return JSON: {{"hook": <0-10>, "match": <0-10>, "overall": <0-10>, "weakest_mome
     return ask_claude_json(cfg, "judge_model", VIEWER_SYSTEM, content)
 
 
-def judge_video(cfg, run, video):
+def judge_video(cfg, run, video, audio=True):
     run = Path(run)
     vj = cfg["video_judge"]
-    checks = attention_checks(cfg, run, video)
+    checks = attention_checks(cfg, run, video, audio)
     fails = [f"{k}={v[0]}" for k, v in checks.items() if not v[1]]
     viewer = None
     if vj.get("use_vlm", True):

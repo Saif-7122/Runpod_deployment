@@ -1,0 +1,13 @@
+# Office PC, small test batches at the highest quality (CE_PROFILE=home_hq). Slower than home.yaml:
+# x264 on the i9 keeps more detail per bit than NVENC (foliage, drone shots). "medium" ~30 s per reel
+# (user's target); "slow" was ~50 s for a barely visible gain.
+rendering:
+  video_codec: "libx264"
+  x264_preset: "medium"
+  crf: 16
+  maxrate: "25M"
+  hw_decode: true
+  parallel_renders: 3
+  threads: 8
+batch:
+  parallel_videos: 3

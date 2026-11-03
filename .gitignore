@@ -11,3 +11,5 @@ data/
 *.wav
 
 CLAUDE.md
+token*.json
+scenictest/

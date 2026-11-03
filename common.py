@@ -96,6 +96,10 @@ def ffmpeg_bin(cfg=None):
     found = shutil.which("ffmpeg")
     if found:
         return found
+    # office PC: full build next to the repo (the imageio fallback has no HarfBuzz, so Telugu would not shape)
+    local = sorted((ROOT.parent / "tools").glob("ffmpeg-*/bin/ffmpeg.exe"))
+    if local:
+        return str(local[-1])
     try:
         import imageio_ffmpeg
         return imageio_ffmpeg.get_ffmpeg_exe()

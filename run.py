@@ -1,7 +1,7 @@
 """Make videos end to end (cost-optimised):
    1 Sonnet call -> 5 candidate plans -> free auto-repair + rule checks -> 1 Haiku call ranks them
-   -> top 2: voice (local GPU) + quick draft render -> video judge (local, threshold)
-   -> best passing draft: final render -> post caption -> upload.   Claude spend is capped per batch.
+   -> top 2: silent track + quick draft render -> video judge (threshold)
+   -> best passing draft only: Sarvam voice -> final render -> post caption -> upload.   Claude spend is capped per batch.
 
   python run.py --brief brief.json --variants 3 --upload           # 3 reels, different angles
   python run.py --brief brief.json --variants 3 --plan-only         # plans + gate only (no voice/render cost)
@@ -121,16 +121,17 @@ class Batch:
                 write_json(run / "status.json", status)
                 log("run", f"{run_id}: plan-only: best script {top[0]['verdict']['score']}, not produced")
                 return status
-            # drafts: voice + quick render + video judge; keep the best passing draft
+            # drafts: silent track timed to the script + quick render + video judge; keep the best passing draft.
+            # Sarvam is paid only for the winner (in produce), never for a draft that fails.
             best = None
             for i, c in enumerate(top):
                 d = run / f"draft_{i + 1}"
                 d.mkdir(exist_ok=True)
-                audio = step(f"tts_draft{i + 1}", lambda: synthesize(cfg, c, d, mock=a.mock_tts, catalog=self.catalog))
+                audio = step(f"silent_draft{i + 1}", lambda: synthesize(cfg, c, d, mock=True, catalog=self.catalog))
                 step(f"fit_draft{i + 1}", lambda: fit(cfg, c, audio, self.catalog, d))
                 with self.render_slots:
                     dv, _ = step(f"render_draft{i + 1}", lambda: render(cfg, d, draft=True))
-                vj = step(f"video_judge{i + 1}", lambda: judge_video(cfg, d, dv))
+                vj = step(f"video_judge{i + 1}", lambda: judge_video(cfg, d, dv, audio=False))
                 c["video_verdict"] = vj
                 log("run", f"{run_id}: draft {i + 1} video score {vj['score']} {'PASS' if vj['passed'] else vj['fails']}")
                 if vj["passed"]:
@@ -144,7 +145,7 @@ class Batch:
             d, c = best
             write_json(run / "plan.json", c)
             write_json(d / "plan.json", c)
-            return self.produce(d, status, c, c["verdict"]["score"], step, reuse_audio=True)
+            return self.produce(d, status, c, c["verdict"]["score"], step)     # real voice + re-fit, then final render
         except BudgetExceeded as e:
             status.update(status="stopped_budget", error=str(e))
             log("run", f"{run_id}: {e}")

@@ -1,0 +1,1244 @@
+{
+"d00": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s01",
+"usable_s": 2.25,
+"file": "17ezN9",
+"desc": ""
+},
+"d01": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s02",
+"usable_s": 3.0,
+"file": "17ezN9",
+"desc": ""
+},
+"d02": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s03",
+"usable_s": 2.0,
+"file": "17ezN9",
+"desc": ""
+},
+"d03": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s04",
+"usable_s": 1.5,
+"file": "17ezN9",
+"desc": ""
+},
+"d04": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s05",
+"usable_s": 8.25,
+"file": "17ezN9",
+"desc": ""
+},
+"d05": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s06",
+"usable_s": 2.25,
+"file": "17ezN9",
+"desc": ""
+},
+"d06": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s07",
+"usable_s": 1.75,
+"file": "17ezN9",
+"desc": ""
+},
+"d07": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s08",
+"usable_s": 2.5,
+"file": "17ezN9",
+"desc": ""
+},
+"d08": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s09",
+"usable_s": 3.25,
+"file": "17ezN9",
+"desc": ""
+},
+"d09": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s10",
+"usable_s": 2.25,
+"file": "17ezN9",
+"desc": ""
+},
+"d10": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s11",
+"usable_s": 1.75,
+"file": "17ezN9",
+"desc": ""
+},
+"d11": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s12",
+"usable_s": 1.5,
+"file": "17ezN9",
+"desc": ""
+},
+"d12": {
+"segment_id": "17ezN9yHsbIMC8iJhqf8N9YcWZvu22qcy_s13",
+"usable_s": 1.5,
+"file": "17ezN9",
+"desc": ""
+},
+"d13": {
+"segment_id": "1X5gLCzhVNuKelFAcIfcWIR8NyR89Rb-x_s01",
+"usable_s": 3.25,
+"file": "1X5gLC",
+"desc": ""
+},
+"d14": {
+"segment_id": "1X5gLCzhVNuKelFAcIfcWIR8NyR89Rb-x_s02",
+"usable_s": 4.75,
+"file": "1X5gLC",
+"desc": ""
+},
+"d15": {
+"segment_id": "1X5gLCzhVNuKelFAcIfcWIR8NyR89Rb-x_s03",
+"usable_s": 2.75,
+"file": "1X5gLC",
+"desc": ""
+},
+"d16": {
+"segment_id": "1DCYlGbudsPBcEn8Y1RuB9zeA-xn5Ygav_s01",
+"usable_s": 2.25,
+"file": "1DCYlG",
+"desc": ""
+},
+"d17": {
+"segment_id": "1DCYlGbudsPBcEn8Y1RuB9zeA-xn5Ygav_s02",
+"usable_s": 3.75,
+"file": "1DCYlG",
+"desc": ""
+},
+"d18": {
+"segment_id": "1DCYlGbudsPBcEn8Y1RuB9zeA-xn5Ygav_s03",
+"usable_s": 1.75,
+"file": "1DCYlG",
+"desc": ""
+},
+"d19": {
+"segment_id": "1DCYlGbudsPBcEn8Y1RuB9zeA-xn5Ygav_s04",
+"usable_s": 1.5,
+"file": "1DCYlG",
+"desc": ""
+},
+"d20": {
+"segment_id": "1DCYlGbudsPBcEn8Y1RuB9zeA-xn5Ygav_s05",
+"usable_s": 2.25,
+"file": "1DCYlG",
+"desc": ""
+},
+"d21": {
+"segment_id": "1DCYlGbudsPBcEn8Y1RuB9zeA-xn5Ygav_s06",
+"usable_s": 1.75,
+"file": "1DCYlG",
+"desc": ""
+},
+"d22": {
+"segment_id": "1DCYlGbudsPBcEn8Y1RuB9zeA-xn5Ygav_s07",
+"usable_s": 1.75,
+"file": "1DCYlG",
+"desc": ""
+},
+"d23": {
+"segment_id": "1DCYlGbudsPBcEn8Y1RuB9zeA-xn5Ygav_s08",
+"usable_s": 2.25,
+"file": "1DCYlG",
+"desc": ""
+},
+"d24": {
+"segment_id": "1ZqC9NNDmOIHy12I16GrPgvoKn1ZhKWzp_s01",
+"usable_s": 4.75,
+"file": "1ZqC9N",
+"desc": ""
+},
+"d25": {
+"segment_id": "1ZqC9NNDmOIHy12I16GrPgvoKn1ZhKWzp_s02",
+"usable_s": 5.0,
+"file": "1ZqC9N",
+"desc": ""
+},
+"d26": {
+"segment_id": "1ZqC9NNDmOIHy12I16GrPgvoKn1ZhKWzp_s03",
+"usable_s": 4.5,
+"file": "1ZqC9N",
+"desc": ""
+},
+"d27": {
+"segment_id": "1ZqC9NNDmOIHy12I16GrPgvoKn1ZhKWzp_s04",
+"usable_s": 3.5,
+"file": "1ZqC9N",
+"desc": ""
+},
+"d28": {
+"segment_id": "1ZqC9NNDmOIHy12I16GrPgvoKn1ZhKWzp_s05",
+"usable_s": 4.0,
+"file": "1ZqC9N",
+"desc": ""
+},
+"d29": {
+"segment_id": "1mkrSCZZktZ-dPaNqdfR8A2zsYPeeU0O4_s01",
+"usable_s": 2.0,
+"file": "1mkrSC",
+"desc": "visitors singing around a campfire at dusk"
+},
+"d30": {
+"segment_id": "1RRwJ4o1vdjSAIwforKODx3DThiBJazRs_s01",
+"usable_s": 6.75,
+"file": "1RRwJ4",
+"desc": "young tree planted in a stone circle"
+},
+"d31": {
+"segment_id": "1BmF75CGnD478MTYWfdZola-O9caLs18U_s01",
+"usable_s": 3.5,
+"file": "1BmF75",
+"desc": "farm team briefing seated visitors"
+},
+"d32": {
+"segment_id": "13lUaYfccPZ23-Oh4m5FGYh1kXjwlesxY_s01",
+"usable_s": 2.25,
+"file": "13lUaY",
+"desc": "visitors sharing a farm meal"
+},
+"d33": {
+"segment_id": "1kY1JQbqpqp63BrgC7fahND--oMDnKh0i_s01",
+"usable_s": 3.0,
+"file": "1kY1JQ",
+"desc": "welcome handshake inside a thatched hut"
+},
+"d34": {
+"segment_id": "1p-HdwuHdBinkLG65OCKhru5jw0EMBmL4_s01",
+"usable_s": 4.0,
+"file": "1p-Hdw",
+"desc": "lantern-lit Oxygen Forest sign at dusk"
+},
+"d35": {
+"segment_id": "1-5ZBeE8ZGPdsSnaj0yL8uDW3ii7sDBqx_s01",
+"usable_s": 5.0,
+"file": "1-5ZBe",
+"desc": "conversation under a thatched hut"
+},
+"d36": {
+"segment_id": "1UtL2QSTNUov1QDmuwgEj84i1RWn13Ssu_s01",
+"usable_s": 4.5,
+"file": "1UtL2Q",
+"desc": "rock waterfall feeding a pond"
+},
+"d37": {
+"segment_id": "1o-OOh8W2e5BDWUsn00hNzK8cy7s2EvXD_s01",
+"usable_s": 4.75,
+"file": "1o-OOh",
+"desc": "stone steps beside the pond"
+},
+"d38": {
+"segment_id": "149ri0TCty4b9cNKf3FD7DQNv03eTakBG_s01",
+"usable_s": 6.0,
+"file": "149ri0",
+"desc": ""
+},
+"d39": {
+"segment_id": "1Kkl70aUtt77ODLC9JyzoHm5Xdvk8vysN_s01",
+"usable_s": 2.0,
+"file": "1Kkl70",
+"desc": "guide pointing out trees to visitors"
+},
+"d40": {
+"segment_id": "1AXzCgzFSGTCPtRV43tcFGqenUFHUkxsx_s01",
+"usable_s": 4.75,
+"file": "1AXzCg",
+"desc": "hands planting a sapling"
+},
+"d41": {
+"segment_id": "1SXAbBlhcOkKd7Q49i3koJbFbO8v4-lol_s01",
+"usable_s": 1.75,
+"file": "1SXAbB",
+"desc": "visitors walking the plantation"
+},
+"d42": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s01",
+"usable_s": 2.5,
+"file": "1LtTxt",
+"desc": ""
+},
+"d43": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s02",
+"usable_s": 1.5,
+"file": "1LtTxt",
+"desc": ""
+},
+"d44": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s03",
+"usable_s": 1.5,
+"file": "1LtTxt",
+"desc": ""
+},
+"d45": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s04",
+"usable_s": 2.0,
+"file": "1LtTxt",
+"desc": ""
+},
+"d46": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s05",
+"usable_s": 1.5,
+"file": "1LtTxt",
+"desc": ""
+},
+"d47": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s06",
+"usable_s": 1.5,
+"file": "1LtTxt",
+"desc": ""
+},
+"d48": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s07",
+"usable_s": 2.75,
+"file": "1LtTxt",
+"desc": ""
+},
+"d49": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s08",
+"usable_s": 2.0,
+"file": "1LtTxt",
+"desc": ""
+},
+"d50": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s09",
+"usable_s": 3.5,
+"file": "1LtTxt",
+"desc": ""
+},
+"d51": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s10",
+"usable_s": 2.0,
+"file": "1LtTxt",
+"desc": ""
+},
+"d52": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s11",
+"usable_s": 2.0,
+"file": "1LtTxt",
+"desc": ""
+},
+"d53": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s12",
+"usable_s": 1.5,
+"file": "1LtTxt",
+"desc": ""
+},
+"d54": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s13",
+"usable_s": 1.5,
+"file": "1LtTxt",
+"desc": ""
+},
+"d55": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s14",
+"usable_s": 2.5,
+"file": "1LtTxt",
+"desc": ""
+},
+"d56": {
+"segment_id": "1LtTxtwuL-awC7H39Cx5IKE63xP9PRd-f_s15",
+"usable_s": 4.25,
+"file": "1LtTxt",
+"desc": ""
+},
+"d57": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s01",
+"usable_s": 1.5,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d58": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s02",
+"usable_s": 2.5,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d59": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s03",
+"usable_s": 1.5,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d60": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s04",
+"usable_s": 1.75,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d61": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s05",
+"usable_s": 2.25,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d62": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s06",
+"usable_s": 1.75,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d63": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s07",
+"usable_s": 1.5,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d64": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s08",
+"usable_s": 3.0,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d65": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s09",
+"usable_s": 1.5,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d66": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s10",
+"usable_s": 6.25,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d67": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s11",
+"usable_s": 3.0,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d68": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s12",
+"usable_s": 1.5,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d69": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s13",
+"usable_s": 1.75,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d70": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s14",
+"usable_s": 1.5,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d71": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s15",
+"usable_s": 2.0,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d72": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s16",
+"usable_s": 2.0,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d73": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s17",
+"usable_s": 1.75,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d74": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s18",
+"usable_s": 3.0,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d75": {
+"segment_id": "1ZUjVmkrUlcUPLlW2ElTSopRtPr4rRj2Q_s19",
+"usable_s": 4.0,
+"file": "1ZUjVm",
+"desc": ""
+},
+"d76": {
+"segment_id": "1suw4oaxTgujknZw3GO21vUIYEWZKsEy__s01",
+"usable_s": 1.7,
+"file": "1suw4o",
+"desc": "Handheld shot of a young man in a pink shirt walking along a leafy pla"
+},
+"d77": {
+"segment_id": "1zzqRm0gXhdYDpie1yEQV3K2sDFx4xORm_s01",
+"usable_s": 1.5,
+"file": "1zzqRm",
+"desc": "Man and young boy walk side by side along a dusty path past a thatched"
+},
+"d78": {
+"segment_id": "1VkhoC55WImx5eCjoEYKxKnmRFPXphGJd_s01",
+"usable_s": 3.0,
+"file": "1VkhoC",
+"desc": "Camera drifts sideways under a thatched hut. A couple sits at a table "
+},
+"d79": {
+"segment_id": "19hjJJn5CMsikM0bMX6kGo-l7C6htGeWK_s01",
+"usable_s": 2.4,
+"file": "19hjJJ",
+"desc": "Slow lateral move through foreground leaves reveals a thatched hut, ba"
+},
+"d80": {
+"segment_id": "1cHbvTDMryo79HXoNRhC-bkUjq52IASMe_s01",
+"usable_s": 3.0,
+"file": "1cHbvT",
+"desc": "Handheld glide under a log-and-thatch hut: a woman in a blue kurta tal"
+},
+"d81": {
+"segment_id": "1XFIjVc535k5C_oW9E4ciwZXkV7S7qE_Y_s01",
+"usable_s": 3.75,
+"file": "1XFIjV",
+"desc": "Farm worker in a sun hat and checked shirt bends over to weed or tend "
+},
+"d82": {
+"segment_id": "1Jklqpu3wbIdrZsZcJfYuK2RL5j1WYCRG_s01",
+"usable_s": 4.0,
+"file": "1Jklqp",
+"desc": "Slow forward push toward a hand-stacked stone gateway with a trail vis"
+},
+"d83": {
+"segment_id": "16l7MLMUqfT0Nrer5qHvzLu2HXzjgmtQE_s01",
+"usable_s": 2.25,
+"file": "16l7ML",
+"desc": "Handheld follow of a man and a woman in a blue dress and scarf walking"
+},
+"d84": {
+"segment_id": "16Cem0vb86fe6W69s7ZzuaYk79dVJMKc4_s01",
+"usable_s": 4.2,
+"file": "16Cem0",
+"desc": "Slow lateral glide past vivid orange marigolds framed by banana leaves"
+},
+"d85": {
+"segment_id": "1ytdkrRIAT13K_JLPYxtXjh-BbWdBcRJh_s01",
+"usable_s": 2.75,
+"file": "1ytdkr",
+"desc": "Camera drifts sideways under a dark leafy branch in the foreground; th"
+},
+"d86": {
+"segment_id": "1IOTaa9Yk_ihha6Kcdb9Z9ZYP2xo8UqaE_s01",
+"usable_s": 2.25,
+"file": "1IOTaa",
+"desc": "Following three visitors from behind as they walk across a grassy clea"
+},
+"d87": {
+"segment_id": "1IOTaa9Yk_ihha6Kcdb9Z9ZYP2xo8UqaE_s02",
+"usable_s": 1.5,
+"file": "1IOTaa",
+"desc": "Tracking behind the visitors as they walk up the path toward a green p"
+},
+"d88": {
+"segment_id": "12tRaAVLhX6gYBVi0ibntfBw9-cxujeeZ_s01",
+"usable_s": 4.0,
+"file": "12tRaA",
+"desc": "Slow forward drift under a rustic thatched hut roof; a man in a brown "
+},
+"d89": {
+"segment_id": "1ExWADdzjn6jaE9UWAfNfpdh3mBLy-PRe_s01",
+"usable_s": 2.5,
+"file": "1ExWAD",
+"desc": "Vivid red hibiscus hangs in sharp focus against green foliage; the cam"
+},
+"d90": {
+"segment_id": "1B5qXeCCFIeHy_ZuL9qSviqrd0tXju1T0_s01",
+"usable_s": 1.75,
+"file": "1B5qXe",
+"desc": "Handheld follow shot from behind: a guide in a sun hat, a woman in a b"
+},
+"d91": {
+"segment_id": "1x6HDa--l6Iq0k0OGIhgUAU6IyiKCKXbr_s01",
+"usable_s": 2.5,
+"file": "1x6HDa",
+"desc": "Handheld tracking shot backing along a dappled forest path as a woman "
+},
+"d92": {
+"segment_id": "1Ex4F4jvMXeWUqICUvo77C_rpILybry4X_s01",
+"usable_s": 3.0,
+"file": "1Ex4F4",
+"desc": "Camera follows a black Jimny SUV driving away on a red dirt track line"
+},
+"d93": {
+"segment_id": "1Fgnqgre9lUFCjK1yWRjuR-aUNZ6OPpyU_s01",
+"usable_s": 1.6,
+"file": "1Fgnqg",
+"desc": "Smiling woman in a red kurta chats with the guide and a male visitor i"
+},
+"d94": {
+"segment_id": "1W5_NK3xXRlF4qGDfNMRiSjAbVpnQjNrS_s01",
+"usable_s": 4.0,
+"file": "1W5_NK",
+"desc": "Handheld glide sideways along a rustic thatched buffet counter with st"
+},
+"d95": {
+"segment_id": "1EJh_hOnyGVQOeDSuoK4hzLATHnen4tRP_s01",
+"usable_s": 1.5,
+"file": "1EJh_h",
+"desc": "Handheld shot of a rock-and-pebble water feature and small pond with l"
+},
+"d96": {
+"segment_id": "1jl96AEqHmEZoaR0aeBVGAhvnv_OJw3Y0_s01",
+"usable_s": 3.0,
+"file": "1jl96A",
+"desc": "Slow lateral drift past a thatched-roof villa with a triangular glass "
+},
+"d97": {
+"segment_id": "1QijLhr4Q816v942v-Csj84u4gqU68VUG_s01",
+"usable_s": 2.25,
+"file": "1QijLh",
+"desc": "Following a white-and-gold robed elder with long grey hair along a red"
+},
+"d98": {
+"segment_id": "1QijLhr4Q816v942v-Csj84u4gqU68VUG_s02",
+"usable_s": 2.5,
+"file": "1QijLh",
+"desc": "Following a couple, a woman in a vivid red and blue saree and a man in"
+},
+"d99": {
+"segment_id": "1mmxUSsIFqT8Y1n4Horifr9jpc0GiDgCK_s01",
+"usable_s": 2.25,
+"file": "1mmxUS",
+"desc": "Following a white-robed guide from behind along a rock-edged earthen p"
+},
+"d100": {
+"segment_id": "1yY81xN33PDd-rELNha3wAhQiej1thdcC_s01",
+"usable_s": 2.8,
+"file": "1yY81x",
+"desc": "Handheld drift under a thatched hut roof as visitors sit around a tabl"
+},
+"d101": {
+"segment_id": "16tT3B4prTVz7mT0TvUjhuhRTUMOF64x-_s01",
+"usable_s": 3.0,
+"file": "16tT3B",
+"desc": "Guide in bucket hat explains something to a couple on red soil; the ca"
+},
+"d102": {
+"segment_id": "1RXOa5cWDWZ1Qx-OZhpW_tt3DHRaAg31__s01",
+"usable_s": 5.0,
+"file": "1RXOa5",
+"desc": "Low-angle lateral slide past a brick-bordered herb bed. A hat-wearing "
+},
+"d103": {
+"segment_id": "1zMRzTQmn6hPz1qbfO8DMQDrDwgS7whb__s02",
+"usable_s": 4.0,
+"file": "1zMRzT",
+"desc": "The guide's face is clearly visible as he gestures and explains the pl"
+},
+"d104": {
+"segment_id": "1G0QnXVqurSmAlj2Fb7sF0Y49JGcNLP0X_s01",
+"usable_s": 1.7,
+"file": "1G0QnX",
+"desc": "Handheld view past sugarcane toward a rustic wooden swing; elderly wom"
+},
+"d105": {
+"segment_id": "1G0QnXVqurSmAlj2Fb7sF0Y49JGcNLP0X_s02",
+"usable_s": 2.5,
+"file": "1G0QnX",
+"desc": "Man in pink polo gently guides an elderly woman in a red saree toward "
+},
+"d106": {
+"segment_id": "1JxYWFgJLOw-Mpg_VUmaSPPaB817TYYKg_s01",
+"usable_s": 6.0,
+"file": "1JxYWF",
+"desc": "Man in a pink polo crouches and plants a sapling, pressing soil around"
+},
+"d107": {
+"segment_id": "1YfCSSCKBRSWxVH6SOOYBQ1FrpzgJF_5S_s01",
+"usable_s": 5.5,
+"file": "1YfCSS",
+"desc": "Follow shot behind a couple walking a red-soil path past boulders and "
+},
+"d108": {
+"segment_id": "1hy7Es1O2cL0RneGsVoSPdfljP2V3ivec_s01",
+"usable_s": 1.75,
+"file": "1hy7Es",
+"desc": "Under the bean-vine pergola the guide in a bucket hat gestures and exp"
+},
+"d109": {
+"segment_id": "1hy7Es1O2cL0RneGsVoSPdfljP2V3ivec_s02",
+"usable_s": 2.0,
+"file": "1hy7Es",
+"desc": "Visitors from behind at the pergola while the guide bends to inspect t"
+},
+"d110": {
+"segment_id": "1MM6zxZg77V1Jl8PwA58ZXfFJKL2WSTSM_s01",
+"usable_s": 3.5,
+"file": "1MM6zx",
+"desc": "Man and boy stand beside a brown calf and a black cow in a shaded farm"
+},
+"d111": {
+"segment_id": "1MM6zxZg77V1Jl8PwA58ZXfFJKL2WSTSM_s02",
+"usable_s": 1.7,
+"file": "1MM6zx",
+"desc": "Man bends and hands greens to the calf while the boy watches beside hi"
+},
+"d112": {
+"segment_id": "1lWrZU797c3TfRDtR3ztrO6uJl6fSuX7A_s01",
+"usable_s": 6.0,
+"file": "1lWrZU",
+"desc": "Handheld drift past the thatched hut poles as a guide in a brown shirt"
+},
+"d113": {
+"segment_id": "1K2pt9pUgVTzWRrBvjsGkKG9WuD6CL9Pj_s01",
+"usable_s": 3.25,
+"file": "1K2pt9",
+"desc": "Forward glide along a dirt road past a flowering tree with yellow blos"
+},
+"d114": {
+"segment_id": "1K2pt9pUgVTzWRrBvjsGkKG9WuD6CL9Pj_s02",
+"usable_s": 5.5,
+"file": "1K2pt9",
+"desc": "Steady glide along the road framed by trees on both sides, opening ont"
+},
+"d115": {
+"segment_id": "1pKERvM6Ikq0-XxfO8cQWdduPezyt6H8D_s01",
+"usable_s": 1.5,
+"file": "1pKERv",
+"desc": "Lush garden with bright marigolds, a rustic log fence and a thatched h"
+},
+"d116": {
+"segment_id": "1pKERvM6Ikq0-XxfO8cQWdduPezyt6H8D_s02",
+"usable_s": 2.0,
+"file": "1pKERv",
+"desc": "Marigold-lined log fence and thatched hut in dappled sun under a jacar"
+},
+"d117": {
+"segment_id": "1h2Fbr_E82XsVGld0RCIqFx14VdALdaq1_s01",
+"usable_s": 4.0,
+"file": "1h2Fbr",
+"desc": "Guide in a bucket hat gestures and explains the circular red-brick rai"
+},
+"d118": {
+"segment_id": "1h2Fbr_E82XsVGld0RCIqFx14VdALdaq1_s02",
+"usable_s": 2.0,
+"file": "1h2Fbr",
+"desc": "Elder and guide stand facing each other in the garden beds while the g"
+},
+"d119": {
+"segment_id": "1y8G4RO9EYplWkK30iAiLkiFaXP3SwqAc_s01",
+"usable_s": 3.5,
+"file": "1y8G4R",
+"desc": "Guide in checked shirt gestures and points while showing a phone with "
+},
+"d120": {
+"segment_id": "1y8G4RO9EYplWkK30iAiLkiFaXP3SwqAc_s02",
+"usable_s": 3.5,
+"file": "1y8G4R",
+"desc": "Guide explains and swipes on a phone map to the elder in white; backgr"
+},
+"n000": {
+"segment_id": "15yWtefOBnSIKeBBLnhVey5DWTWpF3BD5_s01",
+"usable_s": 2.5,
+"file": "15yWte",
+"desc": ""
+},
+"n001": {
+"segment_id": "1ZDb7NIIpzvsl2nuL_rBzU8rmuOqx4miy_s01",
+"usable_s": 3.25,
+"file": "1ZDb7N",
+"desc": ""
+},
+"n002": {
+"segment_id": "1UhQAkJq4hrxoLLoYEmI6GKq4FArAtOYH_s01",
+"usable_s": 1.5,
+"file": "1UhQAk",
+"desc": ""
+},
+"n003": {
+"segment_id": "1UhQAkJq4hrxoLLoYEmI6GKq4FArAtOYH_s02",
+"usable_s": 1.75,
+"file": "1UhQAk",
+"desc": ""
+},
+"n004": {
+"segment_id": "1BMcgiO6scB07Z6BzWkLNN-aV9MbnzJE-_s01",
+"usable_s": 1.5,
+"file": "1BMcgi",
+"desc": ""
+},
+"n005": {
+"segment_id": "13ufd9TtShW_gWNlCaUtrnesKBzI3nPQl_s01",
+"usable_s": 3.25,
+"file": "13ufd9",
+"desc": ""
+},
+"n006": {
+"segment_id": "1j5WAwN8wXpfiX0HQnZtbyv9GI2wNtV9x_s01",
+"usable_s": 3.5,
+"file": "1j5WAw",
+"desc": ""
+},
+"n007": {
+"segment_id": "1mNJuXQPyPV7V9WwvgDUAFUXwZJNW0fCH_s01",
+"usable_s": 5.75,
+"file": "1mNJuX",
+"desc": ""
+},
+"n008": {
+"segment_id": "1s9pcvXMYx3codIzKBzrZ6aUZPgnZdvtd_s01",
+"usable_s": 3.75,
+"file": "1s9pcv",
+"desc": ""
+},
+"n009": {
+"segment_id": "1lBV6TMVO4t1Ru5_ivyI4Xm2E1EE3gPtM_s01",
+"usable_s": 3.0,
+"file": "1lBV6T",
+"desc": ""
+},
+"n010": {
+"segment_id": "1lBUqIxn80SMubEzdWKK-jBj9qbK0snjI_s01",
+"usable_s": 3.5,
+"file": "1lBUqI",
+"desc": ""
+},
+"n011": {
+"segment_id": "1lJtC0rBC07K_R6uHRCYYdWA3YWmxrfMb_s01",
+"usable_s": 1.5,
+"file": "1lJtC0",
+"desc": ""
+},
+"n012": {
+"segment_id": "1lJtC0rBC07K_R6uHRCYYdWA3YWmxrfMb_s02",
+"usable_s": 3.25,
+"file": "1lJtC0",
+"desc": ""
+},
+"n013": {
+"segment_id": "1T7vXFdER9lZ33jtvBl5F_Aj-MTaHFng7_s01",
+"usable_s": 3.75,
+"file": "1T7vXF",
+"desc": ""
+},
+"n014": {
+"segment_id": "1HlMyX2d6YsZEkKSuJQOz680T7H2AZ_tl_s01",
+"usable_s": 3.75,
+"file": "1HlMyX",
+"desc": ""
+},
+"n015": {
+"segment_id": "1kCtMKg6IjEzYBWfBGyJIEeRMbdh-ovkE_s01",
+"usable_s": 4.0,
+"file": "1kCtMK",
+"desc": ""
+},
+"n016": {
+"segment_id": "1ET8FzqKKcDq12_XzE51EKkfNmp-fkvjF_s01",
+"usable_s": 4.25,
+"file": "1ET8Fz",
+"desc": ""
+},
+"n017": {
+"segment_id": "1F6cGA0fYxXEbD3z8Bc7yZh-fvrKDLogA_s01",
+"usable_s": 4.0,
+"file": "1F6cGA",
+"desc": ""
+},
+"n018": {
+"segment_id": "1HfwuN4hxaoSyi9fe5ILLkMKi27NTHX9o_s01",
+"usable_s": 2.0,
+"file": "1HfwuN",
+"desc": ""
+},
+"n019": {
+"segment_id": "1Rxsv6PUxoegVNMNHiO0lRTkiDEStMv4a_s01",
+"usable_s": 4.25,
+"file": "1Rxsv6",
+"desc": ""
+},
+"n020": {
+"segment_id": "1mhy0o7RriwJWgr0a54hRSdQKbPC4zFY6_s01",
+"usable_s": 2.0,
+"file": "1mhy0o",
+"desc": ""
+},
+"n021": {
+"segment_id": "1GC2L4Vfv0pZMNkYT0DHr8QcH3mU0E922_s01",
+"usable_s": 4.25,
+"file": "1GC2L4",
+"desc": ""
+},
+"n022": {
+"segment_id": "1A87tllgVy54G1mttdwcqq7C_epww6oQN_s01",
+"usable_s": 4.25,
+"file": "1A87tl",
+"desc": ""
+},
+"n023": {
+"segment_id": "1T5Su3yDM93L1-vpI0-nihRJYFshxVz-b_s01",
+"usable_s": 4.25,
+"file": "1T5Su3",
+"desc": ""
+},
+"n024": {
+"segment_id": "1oS8Qil7GmZ4G0o0KuF5d51X5ZuC7t-Jy_s01",
+"usable_s": 4.25,
+"file": "1oS8Qi",
+"desc": ""
+},
+"n025": {
+"segment_id": "1_r4mQOUISX7CmbsQs_S-vQla7CqjMa5Q_s01",
+"usable_s": 4.75,
+"file": "1_r4mQ",
+"desc": ""
+},
+"n026": {
+"segment_id": "1eMAeaXKd81p2aAe9j1guu14UrosZO4WK_s01",
+"usable_s": 5.25,
+"file": "1eMAea",
+"desc": ""
+},
+"n027": {
+"segment_id": "1D7REhdhf6Pi8NlUBkE-3HVSc8wskVKAM_s01",
+"usable_s": 5.0,
+"file": "1D7REh",
+"desc": ""
+},
+"n028": {
+"segment_id": "1l7BncgBxBhswPoEL_uzvH07x_WMcDXql_s01",
+"usable_s": 1.75,
+"file": "1l7Bnc",
+"desc": ""
+},
+"n029": {
+"segment_id": "1DZYzvQoMTG-HQbZxPEHBeZ8Gt2aAafxq_s01",
+"usable_s": 5.25,
+"file": "1DZYzv",
+"desc": ""
+},
+"n030": {
+"segment_id": "1O6LUxzSGOgw5uC4oM2_HSOwc7pHBl5fe_s01",
+"usable_s": 5.25,
+"file": "1O6LUx",
+"desc": ""
+},
+"n031": {
+"segment_id": "1LIUqx_9z1Z43lzCZ9m1FQTWZxJvaqJiL_s01",
+"usable_s": 5.5,
+"file": "1LIUqx",
+"desc": ""
+},
+"n032": {
+"segment_id": "1k1IFZExuKlEoRzf3jNCIyd_6w4ocie4J_s01",
+"usable_s": 5.5,
+"file": "1k1IFZ",
+"desc": ""
+},
+"n033": {
+"segment_id": "150aSB8X6xsBqBdvpBvmM-I-qYI1GYZTl_s01",
+"usable_s": 5.25,
+"file": "150aSB",
+"desc": ""
+},
+"n034": {
+"segment_id": "1X8GgUuJuq2Wkfv4xp0cstsAVCkgleHzW_s01",
+"usable_s": 5.75,
+"file": "1X8GgU",
+"desc": ""
+},
+"n035": {
+"segment_id": "1LyG1t-7BBkWu1HwXGM19uZKm6PcJTDtC_s01",
+"usable_s": 6.25,
+"file": "1LyG1t",
+"desc": ""
+},
+"n036": {
+"segment_id": "1po05E2_EwKbYAeyHJ8QBIdGHDUicqECN_s01",
+"usable_s": 2.75,
+"file": "1po05E",
+"desc": ""
+},
+"n037": {
+"segment_id": "1po05E2_EwKbYAeyHJ8QBIdGHDUicqECN_s02",
+"usable_s": 2.75,
+"file": "1po05E",
+"desc": ""
+},
+"n038": {
+"segment_id": "1V0l-qv5P6iHIY0TqU93LN1qIkCpsGv4W_s01",
+"usable_s": 6.25,
+"file": "1V0l-q",
+"desc": ""
+},
+"n039": {
+"segment_id": "1exX8E2g4sV9OitIdyuhXGxmTe0aAJaWe_s01",
+"usable_s": 6.75,
+"file": "1exX8E",
+"desc": ""
+},
+"n040": {
+"segment_id": "1a9VgR4HMrhc5CMvxuzmpjkbRu_25Cfs7_s01",
+"usable_s": 6.25,
+"file": "1a9VgR",
+"desc": ""
+},
+"n041": {
+"segment_id": "15BJJ1eF9mupyqZ3JrJpPr7zAmTNz_k6W_s01",
+"usable_s": 7.0,
+"file": "15BJJ1",
+"desc": ""
+},
+"n042": {
+"segment_id": "1CAf2YXk84Ru3HHuy_5MxxKOvaBupuLP7_s01",
+"usable_s": 7.75,
+"file": "1CAf2Y",
+"desc": ""
+},
+"n043": {
+"segment_id": "1ZrkJXWWhEQzx8rLJg5wgRTVmjY55ZaPd_s01",
+"usable_s": 7.25,
+"file": "1ZrkJX",
+"desc": ""
+},
+"n044": {
+"segment_id": "1kAIyRZjg6cfStWFkydDZusOtlwfVJ95Y_s01",
+"usable_s": 7.5,
+"file": "1kAIyR",
+"desc": ""
+},
+"n045": {
+"segment_id": "106GE0D-6h-x-2bhUzQu6YTzNmzY7Dhtn_s01",
+"usable_s": 4.25,
+"file": "106GE0",
+"desc": ""
+},
+"n046": {
+"segment_id": "106GE0D-6h-x-2bhUzQu6YTzNmzY7Dhtn_s02",
+"usable_s": 3.25,
+"file": "106GE0",
+"desc": ""
+},
+"n047": {
+"segment_id": "1GEsBS6OLPuvtD9Kr4pmb8Ojltik2ruPp_s01",
+"usable_s": 1.5,
+"file": "1GEsBS",
+"desc": ""
+},
+"n048": {
+"segment_id": "1GEsBS6OLPuvtD9Kr4pmb8Ojltik2ruPp_s02",
+"usable_s": 2.0,
+"file": "1GEsBS",
+"desc": ""
+},
+"n049": {
+"segment_id": "11SJ04WzuhPYxZppR-FVeZox7ioog8n2r_s01",
+"usable_s": 8.25,
+"file": "11SJ04",
+"desc": ""
+},
+"n050": {
+"segment_id": "1q9eflpFfhl4JTi9fIcwg3gT1NuwVNPTn_s01",
+"usable_s": 2.75,
+"file": "1q9efl",
+"desc": ""
+},
+"n051": {
+"segment_id": "1q9eflpFfhl4JTi9fIcwg3gT1NuwVNPTn_s02",
+"usable_s": 3.0,
+"file": "1q9efl",
+"desc": ""
+},
+"n052": {
+"segment_id": "1q9eflpFfhl4JTi9fIcwg3gT1NuwVNPTn_s03",
+"usable_s": 4.75,
+"file": "1q9efl",
+"desc": ""
+},
+"n053": {
+"segment_id": "12jCXGi4deAh2wX5IuqrtWV_bnaA7_S1Y_s01",
+"usable_s": 4.0,
+"file": "12jCXG",
+"desc": ""
+},
+"n054": {
+"segment_id": "1imCGEgl0sTdRftu068pV74q_EYzM--y5_s01",
+"usable_s": 8.0,
+"file": "1imCGE",
+"desc": ""
+},
+"n055": {
+"segment_id": "1P8BjNfs-i5xE1graBA3aZqW-7ASP4N_M_s01",
+"usable_s": 2.5,
+"file": "1P8BjN",
+"desc": ""
+},
+"n056": {
+"segment_id": "1P8BjNfs-i5xE1graBA3aZqW-7ASP4N_M_s02",
+"usable_s": 2.5,
+"file": "1P8BjN",
+"desc": ""
+},
+"n057": {
+"segment_id": "1jo2mkk5AXJRKxsh_QjyX9UUiKsMbZnIw_s01",
+"usable_s": 7.5,
+"file": "1jo2mk",
+"desc": ""
+},
+"n058": {
+"segment_id": "19hSPQHYg1hRV2C3_JYxvjtpV1BtExTkJ_s01",
+"usable_s": 6.0,
+"file": "19hSPQ",
+"desc": ""
+},
+"n059": {
+"segment_id": "1ALlSHIRDnZJ2VWRtf-x_l4Itztth7Q4H_s01",
+"usable_s": 5.25,
+"file": "1ALlSH",
+"desc": ""
+},
+"n060": {
+"segment_id": "1ALlSHIRDnZJ2VWRtf-x_l4Itztth7Q4H_s02",
+"usable_s": 2.75,
+"file": "1ALlSH",
+"desc": ""
+},
+"n061": {
+"segment_id": "1TVNyTJHqDZmjrvi_JbOGTJ1Qb-6h9B65_s01",
+"usable_s": 10.25,
+"file": "1TVNyT",
+"desc": ""
+},
+"n062": {
+"segment_id": "18TI2NjJL-upb9ARf6osXvyXflSj5EWfw_s01",
+"usable_s": 3.5,
+"file": "18TI2N",
+"desc": ""
+},
+"n063": {
+"segment_id": "18TI2NjJL-upb9ARf6osXvyXflSj5EWfw_s02",
+"usable_s": 5.25,
+"file": "18TI2N",
+"desc": ""
+},
+"n064": {
+"segment_id": "18TI2NjJL-upb9ARf6osXvyXflSj5EWfw_s03",
+"usable_s": 2.25,
+"file": "18TI2N",
+"desc": ""
+},
+"n065": {
+"segment_id": "1w_gPpisn1NsqsxCpJFiJPDGcxzPdHEo0_s01",
+"usable_s": 10.0,
+"file": "1w_gPp",
+"desc": ""
+},
+"n066": {
+"segment_id": "1w_gPpisn1NsqsxCpJFiJPDGcxzPdHEo0_s02",
+"usable_s": 1.75,
+"file": "1w_gPp",
+"desc": ""
+},
+"n067": {
+"segment_id": "1S12-1xyUdkkD1yGV6HI5LKooGiIem3jY_s01",
+"usable_s": 10.0,
+"file": "1S12-1",
+"desc": ""
+},
+"n068": {
+"segment_id": "1S12-1xyUdkkD1yGV6HI5LKooGiIem3jY_s02",
+"usable_s": 4.25,
+"file": "1S12-1",
+"desc": ""
+},
+"n069": {
+"segment_id": "1N8P3VbrckA3nDL4OE6b_oGyTobwMzDSf_s01",
+"usable_s": 4.25,
+"file": "1N8P3V",
+"desc": ""
+},
+"n070": {
+"segment_id": "1N8P3VbrckA3nDL4OE6b_oGyTobwMzDSf_s02",
+"usable_s": 11.0,
+"file": "1N8P3V",
+"desc": ""
+},
+"n071": {
+"segment_id": "1CdVQP5tsYKU-sROuhOPMj7Q1cnd0T5V5_s01",
+"usable_s": 4.75,
+"file": "1CdVQP",
+"desc": ""
+},
+"n072": {
+"segment_id": "1CdVQP5tsYKU-sROuhOPMj7Q1cnd0T5V5_s02",
+"usable_s": 8.25,
+"file": "1CdVQP",
+"desc": ""
+},
+"n073": {
+"segment_id": "1vbpfult6PaquBzXM9cDV7wQY8mZeSngD_s01",
+"usable_s": 10.5,
+"file": "1vbpfu",
+"desc": ""
+},
+"n074": {
+"segment_id": "1vbpfult6PaquBzXM9cDV7wQY8mZeSngD_s02",
+"usable_s": 1.5,
+"file": "1vbpfu",
+"desc": ""
+},
+"n075": {
+"segment_id": "1vbpfult6PaquBzXM9cDV7wQY8mZeSngD_s03",
+"usable_s": 3.0,
+"file": "1vbpfu",
+"desc": ""
+},
+"n076": {
+"segment_id": "14_KNfEdkotX3yhcdA-nGtAfd7pUK8eVE_s01",
+"usable_s": 5.5,
+"file": "14_KNf",
+"desc": ""
+},
+"n077": {
+"segment_id": "14_KNfEdkotX3yhcdA-nGtAfd7pUK8eVE_s02",
+"usable_s": 4.75,
+"file": "14_KNf",
+"desc": ""
+},
+"n078": {
+"segment_id": "1t_D2EmUdqsdnYNtOW1ufEnANkLutDANc_s01",
+"usable_s": 10.0,
+"file": "1t_D2E",
+"desc": ""
+},
+"n079": {
+"segment_id": "1t_D2EmUdqsdnYNtOW1ufEnANkLutDANc_s02",
+"usable_s": 10.0,
+"file": "1t_D2E",
+"desc": ""
+},
+"n080": {
+"segment_id": "1t_D2EmUdqsdnYNtOW1ufEnANkLutDANc_s03",
+"usable_s": 2.0,
+"file": "1t_D2E",
+"desc": ""
+},
+"n081": {
+"segment_id": "1i4qOHjQQDiVQHk7kpZfu_ePJhDplLguF_s01",
+"usable_s": 4.0,
+"file": "1i4qOH",
+"desc": ""
+},
+"n082": {
+"segment_id": "1i4qOHjQQDiVQHk7kpZfu_ePJhDplLguF_s02",
+"usable_s": 1.75,
+"file": "1i4qOH",
+"desc": ""
+},
+"n083": {
+"segment_id": "1i4qOHjQQDiVQHk7kpZfu_ePJhDplLguF_s03",
+"usable_s": 2.75,
+"file": "1i4qOH",
+"desc": ""
+},
+"n084": {
+"segment_id": "1i4qOHjQQDiVQHk7kpZfu_ePJhDplLguF_s04",
+"usable_s": 1.5,
+"file": "1i4qOH",
+"desc": ""
+},
+"n085": {
+"segment_id": "1i4qOHjQQDiVQHk7kpZfu_ePJhDplLguF_s05",
+"usable_s": 5.5,
+"file": "1i4qOH",
+"desc": ""
+}
+}

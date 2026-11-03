@@ -76,6 +76,67 @@ def edge_request(cfg, text, dst_mp3):
     raise RuntimeError(f"edge-tts failed after retries: {last}")
 
 
+def plain(text):
+    """Script text without *stress* markers (those only style the captions)."""
+    return text.replace("*", "")
+
+
+def elevenlabs_script(cfg, script, adir):
+    """The whole script in ONE ElevenLabs request (natural flow between lines), split back into one wav per
+    sentence at the middle of each pause, using the character timestamps ElevenLabs returns."""
+    e = cfg["tts"]["elevenlabs"]
+    key = os.environ.get("ELEVENLABS_API_KEY")
+    if not key:
+        raise RuntimeError("ELEVENLABS_API_KEY is not set (put it in .env).")
+    lang = script.get("language", "en")
+    name = script.get("voice") or e["defaults"].get(lang, e["defaults"]["en"])
+    voice_id = e["voices"].get(name, name)
+    sents = script["sentences"]
+    texts = [speakable(plain(s["text"])) for s in sents]          # numbers in English words in every language (user)
+    body = {"text": " ".join(texts), "model_id": e["model"], "voice_settings": e.get("voice_settings", {}),
+            "language_code": lang}
+    for attempt in range(4):
+        r = requests.post(e["url"].format(voice_id=voice_id), params={"output_format": e["output_format"]},
+                          headers={"xi-api-key": key, "content-type": "application/json"}, json=body, timeout=180)
+        if r.status_code == 429 or r.status_code >= 500:
+            time.sleep(2 ** attempt + 1)
+            continue
+        if r.status_code >= 400:
+            raise RuntimeError(f"ElevenLabs {r.status_code}: {r.text[:300]}")
+        break
+    else:
+        raise RuntimeError("ElevenLabs: too many retries")
+    data = r.json()
+    al = data.get("normalized_alignment") or data["alignment"]
+    starts, ends = al["character_start_times_seconds"], al["character_end_times_seconds"]
+    full = adir / "_full.wav"
+    mp3 = adir / "_full.mp3"
+    mp3.write_bytes(base64.b64decode(data["audio_base64"]))
+    subprocess.run([ffmpeg_bin(cfg), "-hide_banner", "-loglevel", "error", "-y", "-i", str(mp3),
+                    "-ar", str(SAMPLE_RATE), "-ac", "1", "-c:a", "pcm_s16le", str(full)], check=True)
+    total = wav_duration(full)
+    # each sentence's first/last spoken character time (alignment chars follow the joined text)
+    spans, pos = [], 0
+    n = len(starts)
+    for t in texts:
+        a, b = min(pos, n - 1), min(pos + len(t) - 1, n - 1)
+        spans.append((starts[a], ends[b]))
+        pos += len(t) + 1
+    cuts = [max(0.0, spans[0][0] - 0.05)] + [(spans[i][1] + spans[i + 1][0]) / 2 for i in range(len(spans) - 1)] + \
+           [min(total, spans[-1][1] + 0.25)]
+    parts = []
+    for i, s in enumerate(sents):
+        out = adir / f"{s['id']}.wav"
+        subprocess.run([ffmpeg_bin(cfg), "-hide_banner", "-loglevel", "error", "-y", "-i", str(full),
+                        "-af", f"atrim={cuts[i]:.3f}:{cuts[i + 1]:.3f},asetpts=PTS-STARTPTS",
+                        "-c:a", "pcm_s16le", str(out)], check=True)
+        parts.append({"id": s["id"], "path": str(out), "duration": round(wav_duration(out), 3), "native": False})
+    mp3.unlink(missing_ok=True)
+    full.unlink(missing_ok=True)
+    log("tts", f"ElevenLabs {name} ({e['model']}): {len(body['text'])} characters")
+    return parts
+
+
 def trim_and_normalise(cfg, src, dst, language="en"):
     """Trim leading/trailing silence only (keeps natural pauses), plus the configured pitch shift."""
     t = voice_for(cfg, language)
@@ -91,11 +152,12 @@ def trim_and_normalise(cfg, src, dst, language="en"):
                     "-c:a", "pcm_s16le", str(dst)], check=True)
 
 
-def mock_audio(cfg, text, dst):
-    secs = max(0.8, len(text.split()) / cfg["director"]["words_per_second"])
+def mock_audio(cfg, text, dst, language="en"):
+    from director import wps_for                 # Telugu is spoken slower than English: time the blank track to match
+    secs = max(0.8, len(text.split()) / wps_for(cfg, language))
     subprocess.run([ffmpeg_bin(cfg), "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi",
-                    "-i", f"sine=frequency=220:sample_rate={SAMPLE_RATE}:duration={secs:.2f}",
-                    "-af", "volume=0.05", "-ac", "1", "-c:a", "pcm_s16le", str(dst)], check=True)
+                    "-i", f"anullsrc=channel_layout=mono:sample_rate={SAMPLE_RATE}", "-t", f"{secs:.2f}",
+                    "-c:a", "pcm_s16le", str(dst)], check=True)                  # blank track until Sarvam is loaded
 
 
 def original_clip(cfg, clip):
@@ -130,16 +192,21 @@ def synthesize(cfg, script, run_dir, mock=False, catalog=None):
             if sg.get("native_audio"):
                 native_by_id[sg["segment_id"]] = (c, sg)
 
+    scenic = script.get("mode") == "scenic"           # text-on-screen reel: no voice, silence for the music
+
     def one(s):
         out = adir / f"{s['id']}.wav"
         lang = script.get("language", "en")
-        if lang == "en":
-            s = {**s, "text": speakable(s["text"])}      # digits/rupee/phone -> words the voice reads naturally
-        if s.get("caption_style") == "native":
+        s = {**s, "text": speakable(plain(s["text"]))}   # digits -> English words in every language, no markers
+        if scenic:
+            subprocess.run([ffmpeg_bin(cfg), "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi",
+                            "-i", f"anullsrc=channel_layout=mono:sample_rate={SAMPLE_RATE}", "-t", f"{s['seconds']:.2f}",
+                            "-c:a", "pcm_s16le", str(out)], check=True)
+        elif s.get("caption_style") == "native":
             clip, seg = native_by_id[s["segment_ids"][0]]
             native_audio(cfg, clip, seg, out)
         elif mock:
-            mock_audio(cfg, s["text"], out)
+            mock_audio(cfg, s["text"], out, script.get("language", "en"))
         elif cfg["tts"].get("provider") in ("chatterbox", "indic_parler", "kokoro"):
             from local_models import synthesize_local
             raw = adir / f"{s['id']}_raw.wav"
@@ -159,16 +226,27 @@ def synthesize(cfg, script, run_dir, mock=False, catalog=None):
         return {"id": s["id"], "path": str(out), "duration": round(wav_duration(out), 3),
                 "native": s.get("caption_style") == "native"}
 
-    workers = 1 if cfg["tts"].get("provider") != "sarvam" else cfg["tts"].get("parallel_requests", 4)
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        parts = list(pool.map(one, script["sentences"]))
+    gap = cfg["tts"].get("gap_seconds", 0.15)
+    eleven = cfg["tts"].get("provider") == "elevenlabs" and not mock and not scenic and \
+        not any(s.get("caption_style") == "native" for s in script["sentences"])
+    if eleven:
+        parts = elevenlabs_script(cfg, script, adir)
+        gap = 0.0                                      # the natural pauses are already inside each piece
+    else:
+        workers = 1 if cfg["tts"].get("provider") != "sarvam" else cfg["tts"].get("parallel_requests", 4)
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            parts = list(pool.map(one, script["sentences"]))
+    if scenic:
+        gap = 0.0
 
     # gentle tempo correction so the finished voiceover lands inside the target length
     lo, hi = (script.get("duration_range") or [0, 10 ** 6])
-    gap0 = cfg["tts"].get("gap_seconds", 0.15) * max(0, len(parts) - 1)
+    gap0 = gap * max(0, len(parts) - 1)
     total0 = sum(p["duration"] for p in parts if not p.get("native")) + gap0 + \
         sum(p["duration"] for p in parts if p.get("native"))
     target = lo + 1.0 if total0 < lo + 1.0 else (hi - 2.0 if total0 > hi - 2.0 else None)
+    if scenic:
+        target = None                                  # card timings are set by hand
     if target:
         f = max(0.88, min(1.08, total0 / target))          # atempo < 1 slows, > 1 speeds up
         if abs(f - 1) > 0.01:
@@ -183,16 +261,16 @@ def synthesize(cfg, script, run_dir, mock=False, catalog=None):
             log("tts", f"tempo x{f:.2f} to fit {lo}-{hi} s (was {total0:.1f} s)")
 
     # join with a short breath between sentences
-    gap = cfg["tts"].get("gap_seconds", 0.15)
     gap_wav = adir / "_gap.wav"
-    subprocess.run([ffmpeg_bin(cfg), "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi",
-                    "-i", f"anullsrc=r={SAMPLE_RATE}:cl=mono", "-t", str(gap), "-c:a", "pcm_s16le", str(gap_wav)],
-                   check=True)
+    if gap > 0:
+        subprocess.run([ffmpeg_bin(cfg), "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi",
+                        "-i", f"anullsrc=r={SAMPLE_RATE}:cl=mono", "-t", str(gap), "-c:a", "pcm_s16le", str(gap_wav)],
+                       check=True)
     lst = adir / "_concat.txt"
     lines = []
     for i, p in enumerate(parts):
         lines.append(f"file '{Path(p['path']).name}'")
-        if i < len(parts) - 1:
+        if i < len(parts) - 1 and gap > 0:
             lines.append(f"file '{gap_wav.name}'")
     lst.write_text("\n".join(lines), encoding="utf-8")
     vo = run_dir / "voiceover.wav"
