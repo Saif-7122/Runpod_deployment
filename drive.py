@@ -39,6 +39,8 @@ def _credentials(interactive=False):
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
     token = _path("GOOGLE_TOKEN_FILE", "token.json")
+    if not token.exists() and os.environ.get("GOOGLE_TOKEN_JSON"):     # cloud: token.json pasted as a secret
+        token.write_text(os.environ["GOOGLE_TOKEN_JSON"])
     creds = Credentials.from_authorized_user_file(str(token), SCOPES) if token.exists() else None
     if creds and creds.expired and creds.refresh_token:
         creds.refresh(Request())

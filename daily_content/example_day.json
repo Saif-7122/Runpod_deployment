@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-04",
+  "carousel": {
+    "slides": [
+      {"type": "cover", "kicker": "Hyderabad wealth, this week", "title": "Hyderabad's money is getting advisers.", "sub": "A national wealth desk just opened here for families with ₹5 crore or more to invest. Here's what that tells you."},
+      {"type": "fact", "label": "The news", "big": "₹5 Cr+", "text": "Godrej Wealth has opened a Hyderabad desk for clients with ₹5 crore or more in investable assets."},
+      {"type": "fact", "label": "Why it matters", "big": "Land rich", "text": "Many families here built their wealth through plots and flats. Now they want a plan for it, not just the next purchase."},
+      {"type": "list", "title": "Three questions before your next property", "items": ["What share of your net worth already sits in real estate?", "If you needed the money in 12 months, could you get it out?", "Is every paper checked before you pay the token?"]},
+      {"type": "note", "title": "How we look at it", "text": "We see the whole balance sheet before the next property. Sometimes the right advice is to wait."},
+      {"type": "close", "title": "Rich in property is not the same as wealthy.", "text": "House of Investors is a real estate wealth house in Hyderabad. We advise HNI and NRI families on where their property money works hardest.", "cta": "Talk to our wealth desk"}
+    ],
+    "source": "Source: Hubbis, 3 Nov 2026. For information only, not investment advice."
+  }
+}
