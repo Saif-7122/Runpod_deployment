@@ -72,13 +72,19 @@ Save it all to Drive under `HOI Daily Content/<YYYY-MM-DD>/`. Nothing is posted;
 
 ## Save
 
-Write the copy as Markdown (`day.md`) with these headings: Tweet 1 (X), Tweet 2 (X), LinkedIn: carousel,
-Instagram reel: Arjun sir POV, LinkedIn article (Saturdays), Do not say, Sources, Checks. Then:
+Write the copy as Markdown with these headings: Tweet 1 (X), Tweet 2 (X), LinkedIn: carousel,
+Instagram reel: Arjun sir POV, LinkedIn article (Saturdays), Do not say, Sources, Checks.
 
-- If `GOOGLE_TOKEN_JSON` is set: `pip install -q -r requirements.txt` and run
-  `python3 daily_content/publish.py --date <date> --doc day.md --pdf carousel.pdf`.
-- If not: create the `<date>` folder and the "<date> Content" Google Doc with the Google Drive connector
-  (create_file, contentMimeType text/markdown), and add a line at the top of the doc:
-  "Carousel PDF not uploaded: GOOGLE_TOKEN_JSON is missing in the cloud environment."
+**LOCAL mode (office PC, the default):** the prompt names an output folder (`<out>/<date>`). Create it and save:
+- `<date> Content.md` (the copy)
+- `<date> LinkedIn carousel.pdf` (render straight to this path)
+- `<date> carousel.json` (the slide JSON, so a slide can be fixed and re-rendered by hand)
+To skip repeated topics, read the `Content.md` files in the last 3 date folders under `<out>`.
+Read the news with `python daily_content/fetch_feed.py` (it uses the PC's token.json). Don't upload anything.
 
-Last, sweep the doc for em/en dashes and the banned words, and finish with the Drive folder link.
+**CLOUD mode (only if the prompt says so):** if `GOOGLE_TOKEN_JSON` is set, `pip install -q -r requirements.txt`
+and run `python3 daily_content/publish.py --date <date> --doc day.md --pdf carousel.pdf`; otherwise save the doc
+with the Google Drive connector (create_file, contentMimeType text/markdown) and note that the PDF wasn't uploaded.
+
+Last, sweep the copy for em/en dashes and the banned words, and finish with the folder path and a 3-line summary
+(what you made, which items you held back and why).
