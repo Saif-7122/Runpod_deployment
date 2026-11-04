@@ -1,13 +1,14 @@
 {
   "date": "2026-11-04",
   "carousel": {
+    "footer": "",
     "slides": [
-      {"type": "cover", "kicker": "Hyderabad wealth, this week", "title": "Hyderabad's money is getting advisers.", "sub": "A national wealth desk just opened here for families with ₹5 crore or more to invest. Here's what that tells you."},
+      {"type": "cover", "kicker": "Hyderabad, this week", "title": "The wealth desks have arrived.", "sub": "A national wealth firm just opened a Hyderabad desk for families with ₹5 crore or more. That says more about us than about them."},
       {"type": "fact", "label": "The news", "big": "₹5 Cr+", "text": "Godrej Wealth has opened a Hyderabad desk for clients with ₹5 crore or more in investable assets."},
-      {"type": "fact", "label": "Why it matters", "big": "Land rich", "text": "Many families here built their wealth through plots and flats. Now they want a plan for it, not just the next purchase."},
-      {"type": "list", "title": "Three questions before your next property", "items": ["What share of your net worth already sits in real estate?", "If you needed the money in 12 months, could you get it out?", "Is every paper checked before you pay the token?"]},
-      {"type": "note", "title": "How we look at it", "text": "We see the whole balance sheet before the next property. Sometimes the right advice is to wait."},
-      {"type": "close", "title": "Rich in property is not the same as wealthy.", "text": "House of Investors is a real estate wealth house in Hyderabad. We advise HNI and NRI families on where their property money works hardest.", "cta": "Talk to our wealth desk"}
+      {"type": "fact", "label": "What it really means", "big": "Land rich", "text": "This city made its money in plots and flats. Very little of it was ever planned. Someone finally noticed."},
+      {"type": "list", "title": "Questions most families never ask", "items": ["How much of my net worth is just property?", "If I needed cash in 12 months, could I get it?", "Did anyone check the papers, or did we trust the seller?"]},
+      {"type": "note", "title": "What I've seen", "text": "The families who lost money didn't buy bad land. They bought too much of it, too fast, with no exit."},
+      {"type": "close", "title": "Owning a lot is not the same as being wealthy.", "text": "Count what you can sell, not what you own.", "cta": "Rule of thumb"}
     ],
     "source": "Source: Hubbis, 3 Nov 2026. For information only, not investment advice."
   }

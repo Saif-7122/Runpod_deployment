@@ -13,9 +13,9 @@ const font = (name, file) =>
 const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 const noDash = (s) => s.replace(/[–—]/g, ",");
 
-function slideHtml(s, i, n, source) {
+function slideHtml(s, i, n, source, footer) {
   const dark = s.type === "cover" || s.type === "close";
-  const foot = `<div class="foot"><span>HOUSE OF INVESTORS · REAL ESTATE WEALTH HOUSE · HYDERABAD</span><span>${i + 1} / ${n}</span></div>`;
+  const foot = `<div class="foot"><span>${esc(footer)}</span><span>${i + 1} / ${n}</span></div>`;
   let body = "";
   if (s.type === "cover")
     body = `<div class="kicker">${esc(s.kicker)}</div><h1>${esc(s.title)}</h1><p class="sub">${esc(s.sub)}</p><div class="swipe">Swipe →</div>`;
@@ -57,11 +57,21 @@ async function main() {
   .src{position:absolute;left:96px;right:96px;bottom:140px;font-size:22px;line-height:1.4;color:#8E887E}
   .foot{position:absolute;left:96px;right:96px;bottom:70px;display:flex;justify-content:space-between;border-top:1px solid #B48A3C;padding-top:22px;font-family:'SansB';font-size:19px;letter-spacing:3px;color:#8E887E}`;
   const html = noDash(`<!doctype html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${c.slides
-    .map((s, i) => slideHtml(s, i, c.slides.length, c.source)).join("")}</body></html>`);
+    .map((s, i) => slideHtml(s, i, c.slides.length, c.source, c.footer || "")).join("")}</body></html>`);
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1080, height: 1350 } });
   await page.setContent(html, { waitUntil: "load" });
   await page.evaluate(() => document.fonts.ready);
+  // overflow check: content must sit between the top rule and the source/footer zone, and inside the margins
+  const bad = await page.evaluate(() => [...document.querySelectorAll(".slide")].flatMap((sl, i) => {
+    const r = sl.getBoundingClientRect(), b = sl.querySelector(".body").getBoundingClientRect();
+    const out = [];
+    if (b.top - r.top < 100) out.push(`slide ${i + 1}: text starts too high`);
+    if (r.bottom - b.bottom < 190) out.push(`slide ${i + 1}: text runs into the footer, shorten it`);
+    if (sl.querySelector(".body").scrollWidth > sl.querySelector(".body").clientWidth + 2) out.push(`slide ${i + 1}: a word is too wide`);
+    return out;
+  }));
+  if (bad.length) { console.error("OVERFLOW\n" + bad.join("\n")); await browser.close(); process.exit(2); }
   await page.pdf({ path: outFile, width: "1080px", height: "1350px", printBackground: true });
   if (process.env.PREVIEW) await page.screenshot({ path: process.env.PREVIEW, fullPage: true });
   await browser.close();
