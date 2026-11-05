@@ -2,7 +2,7 @@
 //   node daily_content/render_carousel.js <day.json> <out.pdf>
 // day.json: { "date": "2026-11-04", "carousel": { "slides": [ {type, ...} ], "source": "..." } }
 // Slide types: cover {kicker, title, sub} | fact {label, big, text} | list {title, items[]} |
-//              note {title, text} | close {title, text, cta}
+//              note {label?, title, text} | close {title, text, cta}
 const fs = require("fs");
 const path = require("path");
 const { chromium } = require("playwright");
@@ -24,7 +24,7 @@ function slideHtml(s, i, n, source, footer) {
   else if (s.type === "list")
     body = `<h2>${esc(s.title)}</h2><ol>${(s.items || []).map((x, k) => `<li><b>${String(k + 1).padStart(2, "0")}</b><span>${esc(x)}</span></li>`).join("")}</ol>`;
   else if (s.type === "note")
-    body = `<h2>${esc(s.title)}</h2><div class="note"><div class="kicker">HOI WEALTH DESK NOTE</div><p>${esc(s.text)}</p></div>`;
+    body = `<h2>${esc(s.title)}</h2><div class="note"><div class="kicker">${esc(s.label || "What I've seen")}</div><p>${esc(s.text)}</p></div>`;
   else if (s.type === "close")
     body = `<h1 class="sm">${esc(s.title)}</h1><p class="sub">${esc(s.text)}</p><div class="cta">${esc(s.cta)}</div>`;
   const src = i === n - 1 && source ? `<div class="src">${esc(source)}</div>` : "";
